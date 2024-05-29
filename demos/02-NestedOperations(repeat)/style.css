@@ -1,0 +1,26 @@
+body {
+    background-color: bisque;
+}
+canvas {
+    background-color: aliceblue;
+    border: 1px solid black;
+    display: inline-block;
+}
+doit-box {
+    background-color: lightblue;
+    border: 1px solid black;
+    padding: 3px;
+    align-self: auto;
+    margin: 10px;
+    display: inline-block;
+    padding: 10px;
+}
+box-name {
+    background-color: pink;
+    display: block;
+}
+box-code {
+    background-color: lime;
+    padding-left: 10px;
+    display:inline-block;
+}
