@@ -1,0 +1,111 @@
+<html>
+<head>
+    <script type="text/javascript" src="interpreter.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+
+<body>
+    <doit-box id="line-forward">
+        <box-name contenteditable=true>line-forward</box-name>
+        <box-code contenteditable=true>
+            forward 5
+            <br>
+            <data-box id="varX">
+                <box-name>varX</box-name>
+                <box-code>10</box-code>
+            </data-box>
+            <br>
+            skip 10
+            <br>
+            forward varX
+            <br>
+            skip 10
+            <br>
+            line-forward-n
+        </box-code>
+    </doit-box>
+    <doit-box id="line-n">
+        <box-name contenteditable=true>line-n</box-name>
+        <box-code contenteditable=true>
+            input varX
+            <br>
+            line-forward-n
+        </box-code>
+    </doit-box>
+    <doit-box id="line-forward-n">
+        <box-name contenteditable=true>line-forward-n</box-name>
+        <box-code contenteditable=true>
+            forward varX
+        </box-code>
+    </doit-box>
+    <doit-box id="skip-forward">
+        <box-name contenteditable=true>skip-forward</box-name>
+        <box-code contenteditable=true>
+            skip 5
+        </box-code>
+    </doit-box>
+    <doit-box id="rotate">
+        <box-name contenteditable=true>rotate</box-name>
+        <box-code contenteditable=true>
+            rotate 45
+        </box-code>
+    </doit-box>
+    <doit-box id="callsimple">
+        <box-name contenteditable=true>callsimple</box-name>
+        <box-code contenteditable=true>
+            line-forward
+        </box-code>
+    </doit-box>
+    <doit-box id="callwithvar">
+        <box-name contenteditable=true>callwithvar</box-name>
+        <box-code contenteditable=true>
+            line-n 50
+        </box-code>
+    </doit-box>
+    <doit-box id="callwithvar2">
+        <box-name contenteditable=true>callwithvar2</box-name>
+        <box-code contenteditable=true>
+            callrepeatwithvar 10
+        </box-code>
+    </doit-box>
+    <doit-box id="callrepeatwithvar">
+        <box-name contenteditable=true>callrepeatwithvar</box-name>
+        <box-code contenteditable=true>
+            input x
+            <br>
+            repeatwithvar
+        </box-code>
+    </doit-box>
+    <doit-box id="repeatwithvar">
+        <box-name contenteditable=true>repeatwithvar</box-name>
+        <box-code contenteditable=true>
+            repeat x
+            <box-code>
+                rotate 45
+                <br>
+                forward x
+            </box-code>
+        </box-code>
+    </doit-box>
+    <doit-box id="callwithmultipleargs">
+        <box-name contenteditable="true">callwithmultipleargs</box-name>
+        <box-code>
+            inputwithmultiplearguments 10 50
+        </box-code>
+    </doit-box>
+    <doit-box id="inputwithmultiplearguments">
+        <box-name contenteditable=true>inputwithmultiplearguments</box-name>
+        <box-code contenteditable=true>
+            input x y
+            <br>
+            forward x
+            <br>
+            skip 50
+            <br> 
+            forward y
+        </box-code>
+    </doit-box>
+    <br>
+    <canvas id="main-canvas" width="500" height="500"></canvas>
+</body>
+</html>
