@@ -172,21 +172,25 @@ function evalBox(operations, variables = null)
         console.log(op);
         if(op.operation == 'input')
         {
-            console.log("reading input variable: ");
-            console.log(op.operands[0]);
-            console.log(variables);
-            //find first variable with 'null' name
-            while(variables != null)
-            {
-                console.log("1");
-                if(variables.name == null)
+            op.operands.forEach(operand => {
+                console.log("reading input variable: ");
+                console.log(operand);
+                console.log(variables);
+                let found = false;
+                let variables_iter = variables;
+                while(variables_iter != null)
                 {
-                    //catch it into provided variable name
-                    variables.name = op.operands[0];
-                    break;
+                    console.log("1");
+                    if(variables_iter.name == null)
+                    {
+                        //catch it into provided variable name
+                        found = true;
+                        variables_iter.name = operand;
+                        break;
+                    }
+                    variables_iter = variables_iter.next;
                 }
-                variables = variables.next;
-            }
+            });
             return;
         }
         console.log(variables);
@@ -231,8 +235,10 @@ function evalBox(operations, variables = null)
         if(box != null)
         {
             let new_var = variables;
-            op.operands.forEach(operand => {
-                let num = Number(operand)
+            for(let i = op.operands.length -1 ; i >= 0; i--)
+            {
+                let curr_operand = op.operands[i];
+                let num = Number(curr_operand);
                 if(num != NaN)
                 {
                     console.log("adding new var:");
@@ -243,7 +249,7 @@ function evalBox(operations, variables = null)
                         next: tmp
                     };
                 }
-            });
+            }
             interpretBox(box, new_var);
         }
     });
