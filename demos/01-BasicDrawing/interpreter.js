@@ -4,19 +4,6 @@ var canvas_x;
 var canvas_y;
 var canvas_rotation = 45;
 
-window.onclick = function(e) 
-{
-    var target = e.target;
-    console.log(target);
-    while(target.nodeName != 'DOIT-BOX')
-    {
-        target = target.parentElement;
-    }
-    console.log("parent found:");
-    console.log(target);
-    interpretBox(target);
-}
-
 window.onload = function() 
 {
     //prepare canvas to be callable by boxer functions
@@ -29,12 +16,27 @@ window.onload = function()
         canvas_x = 20;
         canvas_y = 20;
     }
+    //add execute functionality to doit-boxes
+    var doit_runners = document.getElementsByClassName("doit-execute");
+    for (let i = 0; i < doit_runners.length; i++) {
+        var element = doit_runners[i];
+        element.onclick = function(e) {
+            var target = e.target;
+            console.log(target);
+            while(target.nodeName != 'DOIT-BOX')
+            {
+                target = target.parentElement;
+            }
+            console.log("parent found:");
+            console.log(target);
+            interpretBox(target);
+        }
+    }
 }
 
 function interpretBox(caller_box)
 {
     console.log(caller_box);
-    var operations = parseBox(caller_box);
     var box_code = caller_box.querySelector('box-code').childNodes;
     box_code.forEach(child => 
     {
