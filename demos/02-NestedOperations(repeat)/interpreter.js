@@ -14,7 +14,7 @@ var primitives = {
 var boxcode_template = 
 `
 <box-code contenteditable=true>
--
+_
 </box-code>
 `;
 
@@ -22,7 +22,7 @@ window.onclick = function(e)
 {
     var original_target = e.target;
     console.log(original_target);
-    if(original_target.nodeName == 'BODY'){return;}
+    if(original_target.nodeName != 'BOX-CODE' && original_target.nodeName != 'BOX-NAME'){return;}
     var target = original_target;
     while(target.nodeName != 'DOIT-BOX')
     {
@@ -32,6 +32,14 @@ window.onclick = function(e)
     console.log(target);
     if(original_target.nodeName == 'BOX-CODE')
     {
+        console.log("creating focusout event for name");
+        console.log(target);
+        original_target.addEventListener("blur", function onleave()
+        {
+            original_target.spellcheck = false;
+            original_target.removeEventListener("blur",onleave);
+            console.log("left");
+        });
         console.log("editing box code");
         original_target.onkeyup = function(e)
         {
@@ -44,7 +52,7 @@ window.onclick = function(e)
                 var s = window.getSelection();
                 var r = document.createRange();
                 r.setStart(p, 0);
-                r.setEnd(p, 0);
+                r.setEnd(p, 1);
                 s.removeAllRanges();
                 s.addRange(r);
             }
@@ -57,15 +65,12 @@ window.onclick = function(e)
         console.log(target);
         original_target.addEventListener("blur", function onleave()
         {
-            console.log("left");
+            original_target.spellcheck = false;
             target.id = original_target.innerText;
             original_target.removeEventListener("blur",onleave);
+            console.log("left");
         });
         console.log("end of focusout event");
-    }
-    else
-    {
-        interpretBox(target);
     }
 }
 
@@ -80,6 +85,22 @@ window.onload = function()
         canvas_context.moveTo(20,20);
         canvas_x = 20;
         canvas_y = 20;
+    }
+    //add execute functionality to doit-boxes
+    var doit_runners = document.getElementsByClassName("doit-execute");
+    for (let i = 0; i < doit_runners.length; i++) {
+        var element = doit_runners[i];
+        element.onclick = function(e) {
+            var target = e.target;
+            console.log(target);
+            while(target.nodeName != 'DOIT-BOX')
+            {
+                target = target.parentElement;
+            }
+            console.log("parent found:");
+            console.log(target);
+            interpretBox(target);
+        }
     }
 }
 
