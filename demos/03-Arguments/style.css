@@ -9,19 +9,31 @@ canvas {
 doit-box {
     background-color: lightblue;
     border: 1px solid black;
-    padding: 3px;
+    padding: 0 10px 10px 10px;
     align-self: auto;
     margin: 10px;
     display: inline-block;
-    padding: 10px;
 }
 box-name {
     background-color: pink;
-    display: block;
+    padding-left: 5px;
+    padding-right: 5px;
+    border: 1px solid black;
+    border-radius: 5px;
 }
 box-code {
     background-color: lime;
-    padding-left: 10px;
-    display:inline-block;
+    padding: 5px;
+    display: inline-block;
     border: 1px solid black;
+}
+.box-header {
+    display: flex;
+    position: relative;
+    top: -10px;
+    z-index: 99;
+}
+.header-right {
+    margin-left: auto;
+    padding-left: 5px;
 }
