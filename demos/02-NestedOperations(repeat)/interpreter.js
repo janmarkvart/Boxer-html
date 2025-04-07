@@ -30,16 +30,18 @@ window.onclick = function(e)
     }
     console.log("parent found");
     console.log(target);
+    console.log("creating focusout event");
+    original_target.addEventListener("blur", function onleave()
+    {
+        original_target.spellcheck = false;
+        if(original_target.nodeName == 'BOX-NAME')
+        {
+            target.id = original_target.innerText;
+        }
+        original_target.removeEventListener("blur",onleave);
+    });
     if(original_target.nodeName == 'BOX-CODE')
     {
-        console.log("creating focusout event for name");
-        console.log(target);
-        original_target.addEventListener("blur", function onleave()
-        {
-            original_target.spellcheck = false;
-            original_target.removeEventListener("blur",onleave);
-            console.log("left");
-        });
         console.log("editing box code");
         original_target.onkeyup = function(e)
         {
@@ -57,20 +59,6 @@ window.onclick = function(e)
                 s.addRange(r);
             }
         }
-        console.log("end of editing box code");
-    }
-    if(original_target.nodeName == 'BOX-NAME')
-    {
-        console.log("creating focusout event for name");
-        console.log(target);
-        original_target.addEventListener("blur", function onleave()
-        {
-            original_target.spellcheck = false;
-            target.id = original_target.innerText;
-            original_target.removeEventListener("blur",onleave);
-            console.log("left");
-        });
-        console.log("end of focusout event");
     }
 }
 
