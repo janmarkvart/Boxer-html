@@ -37,7 +37,7 @@ var databox_template =
 <div class="box-header">
 <box-name>newdatabox</box-name>
 <div class="header-right">
-<button class="doit-execute">run</button>
+<!--button class="doit-execute">run</button-->
 </div>
 </div>
 <box-code contenteditable=true>
@@ -86,12 +86,25 @@ window.onclick = function(e)
             {
                 console.log("make new doit-box");
                 original_target.innerHTML = original_target.innerHTML.replace("(",doitbox_template);
-                var p = original_target.getElementsByTagName('doit-box')[0].getElementsByTagName('box-code')[0];
-                console.log(p);
+                var p = original_target.getElementsByTagName('doit-box')[0];
+                var run_element = p.getElementsByClassName("doit-execute")[0];
+                code_focus = p.getElementsByTagName('box-code')[0];
+                run_element.onclick = function(e) {
+                    var target = e.target;
+                    console.log(target);
+                    while(target.nodeName != 'DOIT-BOX')
+                    {
+                        target = target.parentElement;
+                    }
+                    console.log("parent found:");
+                    console.log(target);
+                    interpretBox(target);
+                }
+                console.log(code_focus);
                 var s = window.getSelection();
                 var r = document.createRange();
-                r.setStart(p, 0);
-                r.setEnd(p, 1);
+                r.setStart(code_focus, 0);
+                r.setEnd(code_focus, 1);
                 s.removeAllRanges();
                 s.addRange(r);
             }
