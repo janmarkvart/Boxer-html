@@ -15,6 +15,7 @@ var boxcode_template =
 <box-code contenteditable=true>
 _
 </box-code>
+<br>
 `;
 
 var doitbox_template = 
@@ -29,6 +30,8 @@ var doitbox_template =
 <box-code contenteditable=true>
 _
 </box-code>
+</doit-box>
+<br>
 `;
 
 var databox_template = 
@@ -44,6 +47,7 @@ var databox_template =
 _
 </box-code>
 </data-box>
+<br>
 `
 
 window.onclick = function(e) 
@@ -73,12 +77,12 @@ window.onclick = function(e)
             {
                 console.log("make new box-code");
                 original_target.innerHTML = original_target.innerHTML.replace("[",boxcode_template);
-                var p = original_target.getElementsByTagName('box-code')[0];
-                console.log(p);
+                var box_code_list = original_target.getElementsByTagName('box-code');
+                var new_box_code = box_code_list[box_code_list.length -1];
                 var s = window.getSelection();
                 var r = document.createRange();
-                r.setStart(p, 0);
-                r.setEnd(p, 1);
+                r.setStart(new_box_code, 0);
+                r.setEnd(new_box_code, 1);
                 s.removeAllRanges();
                 s.addRange(r);
             }
@@ -86,9 +90,10 @@ window.onclick = function(e)
             {
                 console.log("make new doit-box");
                 original_target.innerHTML = original_target.innerHTML.replace("(",doitbox_template);
-                var p = original_target.getElementsByTagName('doit-box')[0];
-                var run_element = p.getElementsByClassName("doit-execute")[0];
-                code_focus = p.getElementsByTagName('box-code')[0];
+                var doit_box_list = original_target.getElementsByTagName('doit-box');
+                var new_doit_box = doit_box_list[doit_box_list.length -1];
+                var run_element = new_doit_box.getElementsByClassName("doit-execute")[0];
+                var code_focus = new_doit_box.getElementsByTagName('box-code')[0];
                 run_element.onclick = function(e) {
                     var target = e.target;
                     console.log(target);
@@ -112,12 +117,14 @@ window.onclick = function(e)
             {
                 console.log("make new data-box");
                 original_target.innerHTML = original_target.innerHTML.replace("{",databox_template);
-                var p = original_target.getElementsByTagName('data-box')[0].getElementsByTagName('box-code')[0];
+                var data_box_list = original_target.getElementsByTagName('data-box');
+                var new_data_box = data_box_list[data_box_list.length -1];
+                var code_focus = new_data_box.getElementsByTagName('box-code')[0];
                 console.log(p);
                 var s = window.getSelection();
                 var r = document.createRange();
-                r.setStart(p, 0);
-                r.setEnd(p, 1);
+                r.setStart(new_data_box, 0);
+                r.setEnd(new_data_box, 1);
                 s.removeAllRanges();
                 s.addRange(r);
             }
@@ -213,7 +220,7 @@ function parseBox(caller_box)
         }
         if(child.nodeType == Node.ELEMENT_NODE)
         {
-            if(child.nodeName == "BR")
+            if(child.nodeName == "BR" && current_operation.operation != null)
             {
                 operations.push(current_operation);
                 current_operation = {
@@ -223,14 +230,27 @@ function parseBox(caller_box)
             }
             if(child.nodeName == "BOX-CODE")
             {
-                current_operation.operands.push(child);
+                if(current_operation.operation != null) {
+                    //is part of repeat
+                    current_operation.operands.push(child);
+                }
+                else
+                {
+                    current_operation = {
+                        operation: "nested_code",
+                        operands: [child]
+                    };
+                }
             }
             if(child.nodeName == "DOIT-BOX")
             {
-                //TODO: repeat 5 <doit-box> is NOT handled at the moment
+                if(current_operation.operation != null) {
+                    //is part of repeat
+                    current_operation.operands.push(child);
+                }
                 operations.push(current_operation);
                 current_operation = {
-                    operation: "doit",
+                    operation: "nested_doit",
                     operands: [child]
                 };
             }
@@ -362,7 +382,13 @@ function evalBox(operations, variables = null)
             }
             variables = new_var;
         }
-
+        if(op.operation == "nested_code") {
+            interpretBox(op.operands[0], variables);
+        }
+        if(op.operation == "nested_doit")
+        {
+            interpretBox(op.operands[0], variables);
+        }
 
         //simple call to another box (or invalid operation)
         console.log("looking for box:");
