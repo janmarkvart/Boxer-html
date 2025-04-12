@@ -20,7 +20,12 @@ _
 var doitbox_template = 
 `
 <doit-box id="newdoitbox">
+<div class="box-header">
 <box-name>newdoitbox</box-name>
+<div class="header-right">
+<button class="doit-execute">run</button>
+</div>
+</div>
 <box-code contenteditable=true>
 _
 </box-code>
@@ -29,7 +34,12 @@ _
 var databox_template = 
 `
 <data-box id="newdatabox">
+<div class="box-header">
 <box-name>newdatabox</box-name>
+<div class="header-right">
+<button class="doit-execute">run</button>
+</div>
+</div>
 <box-code contenteditable=true>
 _
 </box-code>
@@ -68,7 +78,7 @@ window.onclick = function(e)
                 var s = window.getSelection();
                 var r = document.createRange();
                 r.setStart(p, 0);
-                r.setEnd(p, 0);
+                r.setEnd(p, 1);
                 s.removeAllRanges();
                 s.addRange(r);
             }
