@@ -13,7 +13,7 @@ var primitives = {
 var boxcode_template = 
 `
 <box-code contenteditable=true>
-code...
+_
 </box-code>
 `;
 
@@ -22,7 +22,7 @@ var doitbox_template =
 <doit-box id="newdoitbox">
 <box-name>newdoitbox</box-name>
 <box-code contenteditable=true>
-code...
+_
 </box-code>
 `;
 
@@ -31,7 +31,7 @@ var databox_template =
 <data-box id="newdatabox">
 <box-name>newdatabox</box-name>
 <box-code contenteditable=true>
-code...
+_
 </box-code>
 </data-box>
 `
@@ -39,12 +39,21 @@ code...
 window.onclick = function(e) 
 {
     var original_target = e.target;
-    if(original_target.nodeName == 'BODY'){return;}
+    if(original_target.nodeName != 'BOX-CODE' && original_target.nodeName != 'BOX-NAME'){return;}
     var target = original_target;
-    while(target.nodeName != 'DOIT-BOX')
+    while(target.nodeName != 'DOIT-BOX' && target.nodeName != 'DATA-BOX')
     {
         target = target.parentElement;
     }
+    original_target.addEventListener("blur", function onleave()
+    {
+        original_target.spellcheck = false;
+        if(original_target.nodeName == 'BOX-NAME')
+        {
+            target.id = original_target.innerText;
+        }
+        original_target.removeEventListener("blur",onleave);
+    });
     if(original_target.nodeName == 'BOX-CODE')
     {
         console.log("editing box code");
@@ -92,22 +101,6 @@ window.onclick = function(e)
         }
         console.log("end of editing box code");
     }
-    if(original_target.nodeName == 'BOX-NAME')
-    {
-        console.log("creating focusout event for name");
-        console.log(target);
-        original_target.addEventListener("blur", function onleave()
-        {
-            console.log("left");
-            target.id = original_target.innerText;
-            original_target.removeEventListener("blur",onleave);
-        });
-        console.log("end of focusout event");
-    }
-    else
-    {
-        interpretBox(target);
-    }
 }
 
 window.onload = function() 
@@ -121,6 +114,22 @@ window.onload = function()
         canvas_context.moveTo(20,20);
         canvas_x = 20;
         canvas_y = 20;
+    }
+    //add execute functionality to doit-boxes
+    var doit_runners = document.getElementsByClassName("doit-execute");
+    for (let i = 0; i < doit_runners.length; i++) {
+        var element = doit_runners[i];
+        element.onclick = function(e) {
+            var target = e.target;
+            console.log(target);
+            while(target.nodeName != 'DOIT-BOX')
+            {
+                target = target.parentElement;
+            }
+            console.log("parent found:");
+            console.log(target);
+            interpretBox(target);
+        }
     }
 }
 
