@@ -86,12 +86,12 @@ window.onclick = function(e)
             {
                 console.log("make new doit-box");
                 original_target.innerHTML = original_target.innerHTML.replace("(",doitbox_template);
-                var p = original_target.getElementsByTagName('doit-box')[0];
+                var p = original_target.getElementsByTagName('doit-box')[0].getElementsByTagName('box-code')[0];
                 console.log(p);
                 var s = window.getSelection();
                 var r = document.createRange();
                 r.setStart(p, 0);
-                r.setEnd(p, 0);
+                r.setEnd(p, 1);
                 s.removeAllRanges();
                 s.addRange(r);
             }
@@ -99,12 +99,12 @@ window.onclick = function(e)
             {
                 console.log("make new data-box");
                 original_target.innerHTML = original_target.innerHTML.replace("{",databox_template);
-                var p = original_target.getElementsByTagName('data-box')[0];
+                var p = original_target.getElementsByTagName('data-box')[0].getElementsByTagName('box-code')[0];
                 console.log(p);
                 var s = window.getSelection();
                 var r = document.createRange();
                 r.setStart(p, 0);
-                r.setEnd(p, 0);
+                r.setEnd(p, 1);
                 s.removeAllRanges();
                 s.addRange(r);
             }
