@@ -107,10 +107,6 @@ window.onclick = function(e)
             original_target.removeEventListener("blur",onleave);
         });
     }
-    else
-    {
-        interpretBox(target);
-    }
 }
 
 window.onload = function() 
@@ -124,6 +120,22 @@ window.onload = function()
         canvas_context.moveTo(20,20);
         canvas_x = 20;
         canvas_y = 20;
+    }
+    //add execute functionality to doit-boxes
+    var doit_runners = document.getElementsByClassName("doit-execute");
+    for (let i = 0; i < doit_runners.length; i++) {
+        var element = doit_runners[i];
+        element.onclick = function(e) {
+            var target = e.target;
+            console.log(target);
+            while(target.nodeName != 'DOIT-BOX')
+            {
+                target = target.parentElement;
+            }
+            console.log("parent found:");
+            console.log(target);
+            interpretBox(target);
+        }
     }
 }
 
