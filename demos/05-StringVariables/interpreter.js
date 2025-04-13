@@ -14,58 +14,75 @@ var primitives = {
 var boxcode_template = 
 `
 <box-code contenteditable=true>
-code...
+_
 </box-code>
+<br>
 `;
 
 var doitbox_template = 
 `
 <doit-box id="newdoitbox">
+<div class="box-header">
 <box-name>newdoitbox</box-name>
+<div class="header-right">
+<button class="doit-execute">run</button>
+</div>
+</div>
 <box-code contenteditable=true>
-code...
+_
 </box-code>
+</doit-box>
+<br>
 `;
 
 var databox_template = 
 `
 <data-box id="newdatabox">
+<div class="box-header">
 <box-name>newdatabox</box-name>
+<div class="header-right">
+<!--button class="doit-execute">run</button-->
+</div>
+</div>
 <box-code contenteditable=true>
-code...
+_
 </box-code>
 </data-box>
+<br>
 `
 
 window.onclick = function(e) 
 {
     var original_target = e.target;
-    if(original_target.nodeName == 'BODY'){return;}
+    if(original_target.nodeName != 'BOX-CODE' && original_target.nodeName != 'BOX-NAME'){return;}
     var target = original_target;
-    while(target.nodeName != 'DOIT-BOX')
+    while(target.nodeName != 'DOIT-BOX' && target.nodeName != 'DATA-BOX')
     {
         target = target.parentElement;
     }
+    original_target.addEventListener("blur", function onleave()
+    {
+        original_target.spellcheck = false;
+        if(original_target.nodeName == 'BOX-NAME')
+        {
+            target.id = original_target.innerText;
+        }
+        original_target.removeEventListener("blur",onleave);
+    });
     if(original_target.nodeName == 'BOX-CODE')
     {
-        console.log("editing box-code");
-        original_target.addEventListener("blur", function onleave()
-        {
-            console.log("stopped editing box-code");
-            original_target.removeEventListener("blur",onleave);
-        });
         original_target.onkeyup = function(e)
         {
             if(original_target.innerHTML.indexOf("[") > 0)
             {
                 console.log("make new box-code");
                 original_target.innerHTML = original_target.innerHTML.replace("[",boxcode_template);
-                var p = original_target.getElementsByTagName('box-code')[0];
-                console.log(p);
+                var box_code_list = original_target.getElementsByTagName('box-code');
+                var new_box_code = box_code_list[box_code_list.length -1];
                 var s = window.getSelection();
                 var r = document.createRange();
-                r.setStart(p, 0);
-                r.setEnd(p, 0);
+                r.setStart(new_box_code, 0);
+                r.setEnd(new_box_code, 1);
                 s.removeAllRanges();
                 s.addRange(r);
             }
@@ -73,12 +90,25 @@ window.onclick = function(e)
             {
                 console.log("make new doit-box");
                 original_target.innerHTML = original_target.innerHTML.replace("(",doitbox_template);
-                var p = original_target.getElementsByTagName('doit-box')[0];
-                console.log(p);
+                var doit_box_list = original_target.getElementsByTagName('doit-box');
+                var new_doit_box = doit_box_list[doit_box_list.length -1];
+                var run_element = new_doit_box.getElementsByClassName("doit-execute")[0];
+                var code_focus = new_doit_box.getElementsByTagName('box-code')[0];
+                run_element.onclick = function(e) {
+                    var target = e.target;
+                    console.log(target);
+                    while(target.nodeName != 'DOIT-BOX')
+                    {
+                        target = target.parentElement;
+                    }
+                    console.log("parent found:");
+                    console.log(target);
+                    interpretBox(target);
+                }
                 var s = window.getSelection();
                 var r = document.createRange();
-                r.setStart(p, 0);
-                r.setEnd(p, 0);
+                r.setStart(code_focus, 0);
+                r.setEnd(code_focus, 1);
                 s.removeAllRanges();
                 s.addRange(r);
             }
@@ -86,26 +116,17 @@ window.onclick = function(e)
             {
                 console.log("make new data-box");
                 original_target.innerHTML = original_target.innerHTML.replace("{",databox_template);
-                var p = original_target.getElementsByTagName('data-box')[0];
-                console.log(p);
+                var data_box_list = original_target.getElementsByTagName('data-box');
+                var new_data_box = data_box_list[data_box_list.length -1];
+                var code_focus = new_data_box.getElementsByTagName('box-code')[0];
                 var s = window.getSelection();
                 var r = document.createRange();
-                r.setStart(p, 0);
-                r.setEnd(p, 0);
+                r.setStart(new_data_box, 0);
+                r.setEnd(new_data_box, 1);
                 s.removeAllRanges();
                 s.addRange(r);
             }
         }
-    }
-    else if(original_target.nodeName == 'BOX-NAME')
-    {
-        console.log("editing box-name");
-        original_target.addEventListener("blur", function onleave()
-        {
-            console.log("stopped editing box-name");
-            target.id = original_target.innerText;
-            original_target.removeEventListener("blur",onleave);
-        });
     }
 }
 
