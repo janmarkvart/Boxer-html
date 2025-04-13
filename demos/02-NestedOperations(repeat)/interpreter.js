@@ -16,6 +16,7 @@ var boxcode_template =
 <box-code contenteditable=true>
 _
 </box-code>
+<br>
 `;
 
 window.onclick = function(e) 
@@ -49,12 +50,12 @@ window.onclick = function(e)
             {
                 console.log("make new box-code");
                 original_target.innerHTML = original_target.innerHTML.replace("[",boxcode_template);
-                var p = original_target.getElementsByTagName('box-code')[0];
-                console.log(p);
+                var box_code_list = original_target.getElementsByTagName('box-code');
+                var new_box_code = box_code_list[box_code_list.length -1];
                 var s = window.getSelection();
                 var r = document.createRange();
-                r.setStart(p, 0);
-                r.setEnd(p, 1);
+                r.setStart(new_box_code, 0);
+                r.setEnd(new_box_code, 1);
                 s.removeAllRanges();
                 s.addRange(r);
             }
