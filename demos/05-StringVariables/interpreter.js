@@ -217,7 +217,7 @@ function parseBox(caller_box)
         }
         if(child.nodeType == Node.ELEMENT_NODE)
         {
-            if(child.nodeName == "BR")
+            if(child.nodeName == "BR" && current_operation.operation != null)
             {
                 operations.push(current_operation);
                 current_operation = {
@@ -227,14 +227,27 @@ function parseBox(caller_box)
             }
             if(child.nodeName == "BOX-CODE")
             {
-                current_operation.operands.push(child);
+                if(current_operation.operation != null) {
+                    //is part of repeat
+                    current_operation.operands.push(child);
+                }
+                else
+                {
+                    current_operation = {
+                        operation: "nested_code",
+                        operands: [child]
+                    };
+                }
             }
             if(child.nodeName == "DOIT-BOX")
             {
-                //TODO: repeat 5 <doit-box> is NOT handled at the moment
+                if(current_operation.operation != null) {
+                    //is part of repeat
+                    current_operation.operands.push(child);
+                }
                 operations.push(current_operation);
                 current_operation = {
-                    operation: "doit",
+                    operation: "nested_doit",
                     operands: [child]
                 };
             }
@@ -383,7 +396,13 @@ function evalBox(operations, variables = null)
             }
             variables = new_var;
         }
-
+        if(op.operation == "nested_code") {
+            interpretBox(op.operands[0], variables);
+        }
+        if(op.operation == "nested_doit")
+        {
+            interpretBox(op.operands[0], variables);
+        }
 
         //simple call to another box (or invalid operation)
         console.log("looking for box:");
