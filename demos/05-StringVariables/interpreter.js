@@ -352,6 +352,10 @@ function evalBox(operations, variables = null)
             });
             return;
         }
+        if(op.operation == 'change')
+        {
+            change.apply(change.function, op.operands);
+        }
         for(let i = 0; i< op.operands.length; i++)
         {
             if(/*isNaN(Number(op.operands[i]))*/true)
@@ -473,4 +477,10 @@ function repeat(variables, times, box)
 function log(variable)
 {
     console.log("printing: " +variable);
+}
+
+function change(box_id, new_text)
+{
+    var target_box_code = document.getElementById(box_id).getElementsByTagName('BOX-CODE')[0];
+    target_box_code.innerText = new_text;
 }
