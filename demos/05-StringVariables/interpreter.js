@@ -158,6 +158,46 @@ window.onload = function()
             interpretBox(target);
         }
     }
+    //add show/hide box-code functionality to boxes
+    var doit_runners = document.getElementsByClassName("boxcode-hide");
+    for (let i = 0; i < doit_runners.length; i++) {
+        var element = doit_runners[i];
+        element.onclick = function(e) {
+            var target = e.target;
+            console.log(target);
+            while(target.nodeName != 'DOIT-BOX')
+            {
+                target = target.parentElement;
+            }
+            console.log("parent found:");
+            console.log(target);
+            target = target.getElementsByTagName('BOX-CODE')[0];
+            if (target.style.display === "none") 
+            {
+                target.style.display = "inline-block";
+            } 
+            else 
+            {
+                target.style.display = "none";
+            }
+        }
+    }
+    //add ability to delete box
+    var doit_runners = document.getElementsByClassName("deletebox");
+    for (let i = 0; i < doit_runners.length; i++) {
+        var element = doit_runners[i];
+        element.onclick = function(e) {
+            var target = e.target;
+            console.log(target);
+            while(target.nodeName != 'DOIT-BOX')
+            {
+                target = target.parentElement;
+            }
+            console.log("parent found:");
+            console.log(target);
+            target.remove();
+        }
+    }
 }
 
 function interpretBox(caller_box, variables = null)
