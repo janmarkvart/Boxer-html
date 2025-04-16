@@ -25,7 +25,9 @@ var doitbox_template =
 <div class="box-header">
 <box-name>newdoitbox</box-name>
 <div class="header-right">
+<button class="boxcode-hide">hide</button>
 <button class="doit-execute">run</button>
+<button class="deletebox">delete</button>
 </div>
 </div>
 <box-code contenteditable=true>
@@ -41,7 +43,8 @@ var databox_template =
 <div class="box-header">
 <box-name>newdatabox</box-name>
 <div class="header-right">
-<!--button class="doit-execute">run</button-->
+<button class="boxcode-hide">hide</button>
+<button class="deletebox">delete</button>
 </div>
 </div>
 <box-code contenteditable=true>
@@ -93,6 +96,8 @@ window.onclick = function(e)
                 var doit_box_list = original_target.getElementsByTagName('doit-box');
                 var new_doit_box = doit_box_list[doit_box_list.length -1];
                 var run_element = new_doit_box.getElementsByClassName("doit-execute")[0];
+                var showhide_element = new_doit_box.getElementsByClassName("boxcode-hide")[0];
+                var delete_element = new_doit_box.getElementsByClassName("deletebox")[0];
                 var code_focus = new_doit_box.getElementsByTagName('box-code')[0];
                 run_element.onclick = function(e) {
                     var target = e.target;
@@ -104,6 +109,36 @@ window.onclick = function(e)
                     console.log("parent found:");
                     console.log(target);
                     interpretBox(target);
+                }
+                showhide_element.onclick = function(e) {
+                    var target = e.target;
+                    console.log(target);
+                    while(target.nodeName != 'DOIT-BOX')
+                    {
+                        target = target.parentElement;
+                    }
+                    console.log("parent found:");
+                    console.log(target);
+                    target = target.getElementsByTagName('BOX-CODE')[0];
+                    if (target.style.display === "none") 
+                    {
+                        target.style.display = "inline-block";
+                    } 
+                    else 
+                    {
+                        target.style.display = "none";
+                    }
+                }
+                delete_element.onclick = function(e) {
+                    var target = e.target;
+                    console.log(target);
+                    while(target.nodeName != 'DOIT-BOX')
+                    {
+                        target = target.parentElement;
+                    }
+                    console.log("parent found:");
+                    console.log(target);
+                    target.remove();
                 }
                 var s = window.getSelection();
                 var r = document.createRange();
@@ -118,6 +153,8 @@ window.onclick = function(e)
                 original_target.innerHTML = original_target.innerHTML.replace("{",databox_template);
                 var data_box_list = original_target.getElementsByTagName('data-box');
                 var new_data_box = data_box_list[data_box_list.length -1];
+                var showhide_element = new_data_box.getElementsByClassName("boxcode-hide")[0];
+                var delete_element = new_data_box.getElementsByClassName("deletebox")[0];
                 var code_focus = new_data_box.getElementsByTagName('box-code')[0];
                 var s = window.getSelection();
                 var r = document.createRange();
@@ -125,6 +162,36 @@ window.onclick = function(e)
                 r.setEnd(new_data_box, 1);
                 s.removeAllRanges();
                 s.addRange(r);
+                showhide_element.onclick = function(e) {
+                    var target = e.target;
+                    console.log(target);
+                    while(target.nodeName != 'DATA-BOX')
+                    {
+                        target = target.parentElement;
+                    }
+                    console.log("parent found:");
+                    console.log(target);
+                    target = target.getElementsByTagName('BOX-CODE')[0];
+                    if (target.style.display === "none") 
+                    {
+                        target.style.display = "inline-block";
+                    } 
+                    else 
+                    {
+                        target.style.display = "none";
+                    }
+                }
+                delete_element.onclick = function(e) {
+                    var target = e.target;
+                    console.log(target);
+                    while(target.nodeName != 'DATA-BOX')
+                    {
+                        target = target.parentElement;
+                    }
+                    console.log("parent found:");
+                    console.log(target);
+                    target.remove();
+                }
             }
         }
     }
