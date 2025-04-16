@@ -165,7 +165,7 @@ window.onload = function()
         element.onclick = function(e) {
             var target = e.target;
             console.log(target);
-            while(target.nodeName != 'DOIT-BOX')
+            while(target.nodeName != 'DOIT-BOX' && target.nodeName != 'DATA-BOX')
             {
                 target = target.parentElement;
             }
@@ -189,7 +189,7 @@ window.onload = function()
         element.onclick = function(e) {
             var target = e.target;
             console.log(target);
-            while(target.nodeName != 'DOIT-BOX')
+            while(target.nodeName != 'DOIT-BOX' && target.nodeName != 'DATA-BOX')
             {
                 target = target.parentElement;
             }
