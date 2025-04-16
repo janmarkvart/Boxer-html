@@ -248,11 +248,6 @@ function parseBox(caller_box)
                     //is part of repeat
                     current_operation.operands.push(child);
                 }
-                operations.push(current_operation);
-                current_operation = {
-                    operation: "nested_doit",
-                    operands: [child]
-                };
             }
             if(child.nodeName == "DATA-BOX")
             {
