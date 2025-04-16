@@ -201,14 +201,17 @@ function boxHeaderShowHide(e)
     }
     console.log("parent found:");
     console.log(target);
+    target_hide_button = target.getElementsByClassName("boxcode-hide")[0];
     target = target.getElementsByTagName('BOX-CODE')[0];
     if (target.style.display === "none") 
     {
         target.style.display = "inline-block";
+        target_hide_button.innerText = "hide";
     } 
     else 
     {
         target.style.display = "none";
+        target_hide_button.innerText = "show";
     }
 }
 function boxHeaderDelete(e)
