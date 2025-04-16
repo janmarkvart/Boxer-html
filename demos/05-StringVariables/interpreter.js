@@ -158,15 +158,7 @@ window.onload = function()
     for (let i = 0; i < doit_runners.length; i++) {
         var element = doit_runners[i];
         element.onclick = function(e) {
-            var target = e.target;
-            console.log(target);
-            while(target.nodeName != 'DOIT-BOX')
-            {
-                target = target.parentElement;
-            }
-            console.log("parent found:");
-            console.log(target);
-            interpretBox(target);
+            boxHeaderRun(e);
         }
     }
     //add show/hide box-code functionality to boxes
@@ -174,23 +166,7 @@ window.onload = function()
     for (let i = 0; i < doit_runners.length; i++) {
         var element = doit_runners[i];
         element.onclick = function(e) {
-            var target = e.target;
-            console.log(target);
-            while(target.nodeName != 'DOIT-BOX' && target.nodeName != 'DATA-BOX')
-            {
-                target = target.parentElement;
-            }
-            console.log("parent found:");
-            console.log(target);
-            target = target.getElementsByTagName('BOX-CODE')[0];
-            if (target.style.display === "none") 
-            {
-                target.style.display = "inline-block";
-            } 
-            else 
-            {
-                target.style.display = "none";
-            }
+            boxHeaderShowHide(e);
         }
     }
     //add ability to delete box
@@ -198,15 +174,7 @@ window.onload = function()
     for (let i = 0; i < doit_runners.length; i++) {
         var element = doit_runners[i];
         element.onclick = function(e) {
-            var target = e.target;
-            console.log(target);
-            while(target.nodeName != 'DOIT-BOX' && target.nodeName != 'DATA-BOX')
-            {
-                target = target.parentElement;
-            }
-            console.log("parent found:");
-            console.log(target);
-            target.remove();
+            boxHeaderDelete(e);
         }
     }
 }
