@@ -126,8 +126,8 @@ window.onclick = function(e)
                 var code_focus = new_data_box.getElementsByTagName('box-code')[0];
                 var s = window.getSelection();
                 var r = document.createRange();
-                r.setStart(new_data_box, 0);
-                r.setEnd(new_data_box, 1);
+                r.setStart(code_focus, 0);
+                r.setEnd(code_focus, 1);
                 s.removeAllRanges();
                 s.addRange(r);
                 showhide_element.onclick = function(e) {
