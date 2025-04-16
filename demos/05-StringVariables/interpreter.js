@@ -25,9 +25,9 @@ var doitbox_template =
 <div class="box-header">
 <box-name>newdoitbox</box-name>
 <div class="header-right">
-<button class="boxcode-hide">hide</button>
-<button class="doit-execute">run</button>
-<button class="deletebox">delete</button>
+<button class="boxcode-hide" onclick="boxHeaderShowHide(event)">hide</button>
+<button class="doit-execute" onclick="boxHeaderRun(event)">run</button>
+<button class="deletebox" onclick="boxHeaderDelete(event)">delete</button>
 </div>
 </div>
 <box-code contenteditable=true>
@@ -43,8 +43,8 @@ var databox_template =
 <div class="box-header">
 <box-name>newdatabox</box-name>
 <div class="header-right">
-<button class="boxcode-hide">hide</button>
-<button class="deletebox">delete</button>
+<button class="boxcode-hide" onclick="boxHeaderShowHide(event)">hide</button>
+<button class="deletebox" onclick="boxHeaderDelete(event)">delete</button>
 </div>
 </div>
 <box-code contenteditable=true>
@@ -89,25 +89,13 @@ window.onclick = function(e)
                 s.removeAllRanges();
                 s.addRange(r);
             }
-            if(original_target.innerHTML.indexOf("(") > 0)
+            if(original_target.innerHTML.indexOf("]") > 0)
             {
                 console.log("make new doit-box");
-                original_target.innerHTML = original_target.innerHTML.replace("(",doitbox_template);
+                original_target.innerHTML = original_target.innerHTML.replace("]",doitbox_template);
                 var doit_box_list = original_target.getElementsByTagName('doit-box');
                 var new_doit_box = doit_box_list[doit_box_list.length -1];
-                var run_element = new_doit_box.getElementsByClassName("doit-execute")[0];
-                var showhide_element = new_doit_box.getElementsByClassName("boxcode-hide")[0];
-                var delete_element = new_doit_box.getElementsByClassName("deletebox")[0];
                 var code_focus = new_doit_box.getElementsByTagName('box-code')[0];
-                run_element.onclick = function(e){
-                    boxHeaderRun(e);
-                }
-                showhide_element.onclick = function(e) {
-                    boxHeaderShowHide(e);
-                }
-                delete_element.onclick = function(e) {
-                    boxHeaderDelete(e);
-                }
                 var s = window.getSelection();
                 var r = document.createRange();
                 r.setStart(code_focus, 0);
@@ -121,8 +109,6 @@ window.onclick = function(e)
                 original_target.innerHTML = original_target.innerHTML.replace("{",databox_template);
                 var data_box_list = original_target.getElementsByTagName('data-box');
                 var new_data_box = data_box_list[data_box_list.length -1];
-                var showhide_element = new_data_box.getElementsByClassName("boxcode-hide")[0];
-                var delete_element = new_data_box.getElementsByClassName("deletebox")[0];
                 var code_focus = new_data_box.getElementsByTagName('box-code')[0];
                 var s = window.getSelection();
                 var r = document.createRange();
@@ -130,12 +116,6 @@ window.onclick = function(e)
                 r.setEnd(code_focus, 1);
                 s.removeAllRanges();
                 s.addRange(r);
-                showhide_element.onclick = function(e) {
-                    boxHeaderShowHide(e);
-                }
-                delete_element.onclick = function(e) {
-                    boxHeaderDelete(e);
-                }
             }
         }
     }
