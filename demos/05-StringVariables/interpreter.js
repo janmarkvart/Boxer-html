@@ -99,46 +99,14 @@ window.onclick = function(e)
                 var showhide_element = new_doit_box.getElementsByClassName("boxcode-hide")[0];
                 var delete_element = new_doit_box.getElementsByClassName("deletebox")[0];
                 var code_focus = new_doit_box.getElementsByTagName('box-code')[0];
-                run_element.onclick = function(e) {
-                    var target = e.target;
-                    console.log(target);
-                    while(target.nodeName != 'DOIT-BOX')
-                    {
-                        target = target.parentElement;
-                    }
-                    console.log("parent found:");
-                    console.log(target);
-                    interpretBox(target);
+                run_element.onclick = function(e){
+                    boxHeaderRun(e);
                 }
                 showhide_element.onclick = function(e) {
-                    var target = e.target;
-                    console.log(target);
-                    while(target.nodeName != 'DOIT-BOX')
-                    {
-                        target = target.parentElement;
-                    }
-                    console.log("parent found:");
-                    console.log(target);
-                    target = target.getElementsByTagName('BOX-CODE')[0];
-                    if (target.style.display === "none") 
-                    {
-                        target.style.display = "inline-block";
-                    } 
-                    else 
-                    {
-                        target.style.display = "none";
-                    }
+                    boxHeaderShowHide(e);
                 }
                 delete_element.onclick = function(e) {
-                    var target = e.target;
-                    console.log(target);
-                    while(target.nodeName != 'DOIT-BOX')
-                    {
-                        target = target.parentElement;
-                    }
-                    console.log("parent found:");
-                    console.log(target);
-                    target.remove();
+                    boxHeaderDelete(e);
                 }
                 var s = window.getSelection();
                 var r = document.createRange();
@@ -163,34 +131,10 @@ window.onclick = function(e)
                 s.removeAllRanges();
                 s.addRange(r);
                 showhide_element.onclick = function(e) {
-                    var target = e.target;
-                    console.log(target);
-                    while(target.nodeName != 'DATA-BOX')
-                    {
-                        target = target.parentElement;
-                    }
-                    console.log("parent found:");
-                    console.log(target);
-                    target = target.getElementsByTagName('BOX-CODE')[0];
-                    if (target.style.display === "none") 
-                    {
-                        target.style.display = "inline-block";
-                    } 
-                    else 
-                    {
-                        target.style.display = "none";
-                    }
+                    boxHeaderShowHide(e);
                 }
                 delete_element.onclick = function(e) {
-                    var target = e.target;
-                    console.log(target);
-                    while(target.nodeName != 'DATA-BOX')
-                    {
-                        target = target.parentElement;
-                    }
-                    console.log("parent found:");
-                    console.log(target);
-                    target.remove();
+                    boxHeaderDelete(e);
                 }
             }
         }
@@ -265,6 +209,51 @@ window.onload = function()
             target.remove();
         }
     }
+}
+
+function boxHeaderRun(e) 
+{
+    var target = e.target;
+    console.log(target);
+    while(target.nodeName != 'DOIT-BOX')
+    {
+        target = target.parentElement;
+    }
+    console.log("parent found:");
+    console.log(target);
+    interpretBox(target);
+}
+function boxHeaderShowHide(e) 
+{
+    var target = e.target;
+    console.log(target);
+    while(target.nodeName != 'DOIT-BOX' && target.nodeName != 'DATA-BOX')
+    {
+        target = target.parentElement;
+    }
+    console.log("parent found:");
+    console.log(target);
+    target = target.getElementsByTagName('BOX-CODE')[0];
+    if (target.style.display === "none") 
+    {
+        target.style.display = "inline-block";
+    } 
+    else 
+    {
+        target.style.display = "none";
+    }
+}
+function boxHeaderDelete(e)
+{
+    var target = e.target;
+    console.log(target);
+    while(target.nodeName != 'DOIT-BOX' && target.nodeName != 'DATA-BOX')
+    {
+        target = target.parentElement;
+    }
+    console.log("parent found:");
+    console.log(target);
+    target.remove();
 }
 
 function interpretBox(caller_box, variables = null)
