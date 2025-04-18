@@ -296,15 +296,13 @@ function parseBox(caller_box)
             if(child.nodeName == "DATA-BOX")
             {
                 console.log("handling data-box");
-                console.log(child.getElementsByTagName("BOX-CODE")[0].innerText);
                 //try to create new variable
-                let possible_var = tryGrabVariable(child);
-                console.log(possible_var);
-                if(!isNaN(possible_var))
+                let databox_content = child.getElementsByTagName('BOX-CODE')[0].childNodes;
+                console.log(databox_content);
+                if(databox_content.length == 1 && databox_content[0].nodeType == Node.TEXT_NODE)
                 {
-                    //integer value acquired
-                    console.log("code is a number, handle as new int variable")
-                    
+                    //simple databox variable
+                    let possible_var = databox_content[0].wholeText;
                     //if operation exists, add it as an operand
                     if(current_operation.operation != null)
                     {
@@ -313,8 +311,8 @@ function parseBox(caller_box)
                     }
                     //and add new op to create variable in eval box
                     current_operation = {
-                    operation: "new_var",
-                    operands: [child.getElementsByTagName("BOX-NAME")[0].innerText, possible_var]
+                        operation: "new_var",
+                        operands: [child.getElementsByTagName("BOX-NAME")[0].innerText, possible_var]
                     };
                     operations.push(current_operation);
                     current_operation = {
@@ -322,26 +320,9 @@ function parseBox(caller_box)
                         operands: []
                     };
                 }
-                else 
-                {
-                    //integer value acquired
-                    console.log("code is a text, handle as new text variable");
-                    //if operation exists, add it as an operand
-                    if(current_operation.operation != null)
-                    {
-                        current_operation.operands.push(possible_var);
-                        operations.push(current_operation);
-                    }
-                    //and add new op to create variable in eval box
-                    current_operation = {
-                    operation: "new_var",
-                    operands: [child.getElementsByTagName("BOX-NAME")[0].innerText, possible_var]
-                    };
-                    operations.push(current_operation);
-                    current_operation = {
-                        operation: null,
-                        operands: []
-                    };
+                else{
+                    //complex databox variable
+
                 }
             }
         }
@@ -353,11 +334,6 @@ function parseBox(caller_box)
     }
     console.log("parsing done");
     return operations;
-}
-
-function tryGrabVariable(data_box)
-{
-    return (data_box.getElementsByTagName('BOX-CODE')[0].innerText);
 }
 
 function grabBoxCode(box)
@@ -532,12 +508,13 @@ function change(box_id, new_text)
     target_box_code.innerText = new_text;
 }
 
-function boxer_for(variables, iter, check, source)
+function boxer_for(variables, iter, check, source, box)
 {
     console.log(variables);
     console.log(iter);
     console.log(check);
     console.log(source);
+    console.log(box);
     if(check == "in")
     {
         console.log("ok");
