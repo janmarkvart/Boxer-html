@@ -237,7 +237,7 @@ function parseBox(caller_box)
         operands: []
     };
     var box_code;
-    if(caller_box.nodeName == "DOIT-BOX")
+    if(caller_box.nodeName == "DOIT-BOX" || caller_box.nodeName == "DATA-BOX")
     {
         box_code = grabBoxCode(caller_box);
     }
@@ -320,9 +320,25 @@ function parseBox(caller_box)
                         operands: []
                     };
                 }
-                else{
+                else
+                {
                     //complex databox variable
-
+                    let complex_variable = parseBox(child);
+                    if(current_operation.operation != null)
+                    {
+                        operations.push(current_operation);
+                    }
+                    //and add new op to create variable in eval box
+                    current_operation = {
+                        operation: "new_var",
+                        operands: [child.getElementsByTagName("BOX-NAME")[0].innerText, complex_variable]
+                    };
+                    operations.push(current_operation);
+                    current_operation = {
+                        operation: null,
+                        operands: []
+                    };
+                        
                 }
             }
         }
@@ -415,13 +431,7 @@ function evalBox(operations, variables = null)
         //NEW: handling data-box variable
         if(op.operation == "new_var")
         {
-            let tmp = variables;
-            let new_var = {
-                name: op.operands[0],
-                value: op.operands[1],
-                next: tmp
-            }
-            variables = new_var;
+            variables = addNewVariable(variables, op.operands);
         }
         if(op.operation == "nested_code") {
             interpretBox(op.operands[0], variables);
@@ -456,6 +466,27 @@ function evalBox(operations, variables = null)
             interpretBox(box, new_var);
         }
     });
+}
+
+function addNewVariable(variables, addition)
+{
+    if(addition.length == 2)
+        {
+            //simple variable
+            let tmp = variables;
+            let new_var = {
+                name: addition[0],
+                value: addition[1],
+                next: tmp
+            }
+            variables = new_var;
+        }
+        else 
+        {
+            //complex variable
+            console.log(addition);
+        }
+    return variables;
 }
 
 function tryFindBox(box_id)
