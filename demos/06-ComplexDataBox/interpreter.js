@@ -309,9 +309,9 @@ function parseBox(caller_box)
                     if(current_operation.operation != null)
                     {
                         current_operation.operands.push(possible_var);
+                        operations.push(current_operation);
                     }
                     //and add new op to create variable in eval box
-                    operations.push(current_operation);
                     current_operation = {
                     operation: "new_var",
                     operands: [child.getElementsByTagName("BOX-NAME")[0].innerText, possible_var]
@@ -330,9 +330,9 @@ function parseBox(caller_box)
                     if(current_operation.operation != null)
                     {
                         current_operation.operands.push(possible_var);
+                        operations.push(current_operation);
                     }
                     //and add new op to create variable in eval box
-                    operations.push(current_operation);
                     current_operation = {
                     operation: "new_var",
                     operands: [child.getElementsByTagName("BOX-NAME")[0].innerText, possible_var]
