@@ -512,6 +512,14 @@ function createComplexVariable(addition)
                 value: elem.operands[1]
             });
         }
+        else 
+        {
+            //even more complex variable!
+            variable.push({
+                name: elem.operands[0],
+                value: createComplexVariable(elem.operands[1])
+            });
+        }
     });
     return variable;
 }

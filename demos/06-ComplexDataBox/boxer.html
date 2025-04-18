@@ -114,6 +114,102 @@
             <br>
         </box-code>
     </doit-box>
+    <doit-box id="complex-databox">
+        <div class="box-header">
+            <box-name contenteditable=true>complex-databox</box-name>
+            <div class="header-right">
+                <button class="boxcode-hide">hide</button>
+                <button class="doit-execute">run</button>
+                <button class="deletebox">delete</button>
+            </div>
+        </div>
+        <box-code contenteditable=true>
+            <data-box id="complex">
+                <div class="box-header">
+                    <box-name>complex</box-name>
+                    <div class="header-right">
+                        <button class="boxcode-hide">show</button>
+                        <button class="deletebox">delete</button>
+                    </div>
+                </div>
+                <box-code style="display: none;">
+                    <data-box id="item1">
+                        <div class="box-header">
+                            <box-name>item1</box-name>
+                            <div class="header-right">
+                                <button class="boxcode-hide">hide</button>
+                                <button class="deletebox">delete</button>
+                            </div>
+                        </div>
+                        <box-code>
+                            <data-box id="item1Name">
+                                <div class="box-header">
+                                    <box-name>item1Name</box-name>
+                                    <div class="header-right">
+                                        <button class="boxcode-hide">hide</button>
+                                        <button class="deletebox">delete</button>
+                                    </div>
+                                </div>
+                                <box-code>Adam</box-code>
+                            </data-box>
+                            <data-box id="item1Age">
+                                <div class="box-header">
+                                    <box-name>item1Age</box-name>
+                                    <div class="header-right">
+                                        <button class="boxcode-hide">hide</button>
+                                        <button class="deletebox">delete</button>
+                                    </div>
+                                </div>
+                                <box-code>20</box-code>
+                            </data-box>
+                            <br>
+                        </box-code>
+                    </data-box>
+                    <br>
+                    <data-box id="item2">
+                        <div class="box-header">
+                            <box-name>item2</box-name>
+                            <div class="header-right">
+                                <button class="boxcode-hide">hide</button>
+                                <button class="deletebox">delete</button>
+                            </div>
+                        </div>
+                        <box-code>
+                            <data-box id="item2Name">
+                                <div class="box-header">
+                                    <box-name>item2Name</box-name>
+                                    <div class="header-right">
+                                        <button class="boxcode-hide">hide</button>
+                                        <button class="deletebox">delete</button>
+                                    </div>
+                                </div>
+                                <box-code>Tim</box-code>
+                            </data-box>
+                            <data-box id="item2Age">
+                                <div class="box-header">
+                                    <box-name>item2Age</box-name>
+                                    <div class="header-right">
+                                        <button class="boxcode-hide">hide</button>
+                                        <button class="deletebox">delete</button>
+                                    </div>
+                                </div>
+                                <box-code>30</box-code>
+                            </data-box>
+                            <br>
+                        </box-code>
+                    </data-box>
+                    <br>
+                </box-code>
+            </data-box>
+            <br>
+            for x in complex 
+            <box-code>
+                log x
+                <br>
+            </box-code>
+            <br>
+        </box-code>
+    </doit-box>
     <doit-box id="line-forward">
         <div class="box-header">
             <box-name contenteditable=true>line-forward</box-name>
