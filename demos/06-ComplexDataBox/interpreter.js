@@ -431,6 +431,11 @@ function evalBox(operations, variables = null)
             console.log(op.operands);
             repeat.apply(repeat, op.operands);
         }
+        if(op.operation == 'for')
+        {
+            op.operands.unshift(variables);
+            boxer_for.apply(boxer_for, op.operands);
+        }
         //NEW: handling data-box variable
         if(op.operation == "new_var")
         {
@@ -525,4 +530,16 @@ function change(box_id, new_text)
 {
     var target_box_code = document.getElementById(box_id).getElementsByTagName('BOX-CODE')[0];
     target_box_code.innerText = new_text;
+}
+
+function boxer_for(variables, iter, check, source)
+{
+    console.log(variables);
+    console.log(iter);
+    console.log(check);
+    console.log(source);
+    if(check == "in")
+    {
+        console.log("ok");
+    }
 }
