@@ -428,6 +428,11 @@ function evalBox(operations, variables = null)
             op.operands.unshift(variables);
             boxer_for.apply(boxer_for, op.operands);
         }
+        if(op.operation == 'if')
+        {
+            op.operands.unshift(variables);
+            boxer_if.apply(boxer_if, op.operands);
+        }
         //NEW: handling data-box variable
         if(op.operation == "new_var")
         {
@@ -577,5 +582,13 @@ function boxer_for(variables, iter, check, source, box)
             variables = addNewVariable(variables, new_var);
             interpretBox(box, variables);
         });
+    }
+}
+
+function boxer_if(variables, left, comparator, right, box)
+{
+    if(eval("\""+left +"\""+ comparator +"\""+ right +"\" ? true : false"))
+    {
+        interpretBox(box, variables);
     }
 }
