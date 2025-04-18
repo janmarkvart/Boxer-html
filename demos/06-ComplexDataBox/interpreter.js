@@ -470,23 +470,45 @@ function evalBox(operations, variables = null)
 
 function addNewVariable(variables, addition)
 {
-    if(addition.length == 2)
-        {
-            //simple variable
-            let tmp = variables;
-            let new_var = {
-                name: addition[0],
-                value: addition[1],
-                next: tmp
-            }
-            variables = new_var;
+    let tmp = variables;
+    if(addition[1].constructor != Array)
+    {
+        //simple variable
+        let new_var = {
+            name: addition[0],
+            value: addition[1],
+            next: tmp
         }
-        else 
-        {
-            //complex variable
-            console.log(addition);
+        variables = new_var;
+    }
+    else 
+    {
+        //complex variable
+        let new_var = {
+            name: addition[0],
+            value: createComplexVariable(addition[1]),
+            next: tmp
         }
+        variables = new_var;
+    }
     return variables;
+}
+
+function createComplexVariable(addition)
+{
+    console.log(addition);
+    let variable = [];
+    addition.forEach(elem => 
+    {
+        if(elem.operands[1] != Array)
+        {
+            variable.push({
+                name: elem.operands[0],
+                value: elem.operands[1]
+            });
+        }
+    });
+    return variable;
 }
 
 function tryFindBox(box_id)
