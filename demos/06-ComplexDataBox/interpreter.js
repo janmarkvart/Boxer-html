@@ -571,5 +571,11 @@ function boxer_for(variables, iter, check, source, box)
     if(check == "in")
     {
         console.log("ok");
+        source.forEach(elem => 
+        {
+            let new_var = [iter, elem.value];
+            variables = addNewVariable(variables, new_var);
+            interpretBox(box, variables);
+        });
     }
 }
