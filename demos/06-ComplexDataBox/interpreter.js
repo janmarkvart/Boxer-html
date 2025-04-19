@@ -392,16 +392,31 @@ function evalBox(operations, variables = null)
         }
         for(let i = 0; i< op.operands.length; i++)
         {
-            if(/*isNaN(Number(op.operands[i]))*/true)
+            if(typeof op.operands[i] === 'string')
             {
                 console.log("replacing variable "+op.operands[i]+" with its value");
+                let spl = op.operands[i].split('.');
+                let spl_idx = 0;
                 //is variable to be translated
                 let variables_copy = variables;
                 while(variables_copy != null)
                 {
-                    if(variables_copy.name === op.operands[i])
+                    //first level of lookup
+                    if(variables_copy.name === spl[spl_idx])
                     {
-                        op.operands[i] = variables_copy.value;
+                        variables_nested = variables_copy;
+                        op.operands[i] = variables_nested.value;
+                        spl_idx++;
+                        //looking further into the found value (item.x etc.)
+                        while(spl_idx < spl.length)
+                        {
+                            variables_nested.value.forEach(item => 
+                            {
+                                if(item.name == spl[spl_idx]) {variables_nested = item;}
+                            });
+                            spl_idx++;
+                        }
+                        op.operands[i] = variables_nested.value;
                         console.log("value found and updated: "+op.operands[i]);
                         break;
                     }
