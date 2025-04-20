@@ -54,6 +54,11 @@ _
 <br>
 `
 
+function runBoxer(){
+    console.log("boxer running");
+    interpretBox("entrypoint");
+}
+
 window.onclick = function(e) 
 {
     var original_target = e.target;
@@ -123,6 +128,18 @@ window.onclick = function(e)
 
 window.onload = function() 
 {
+    console.log(innerWidth);
+    //if boxer is embedded, only show the entrypoint box (and canvas)
+    if(window.self != window.top) {
+        var boxes = document.getElementsByTagName('doit-box');
+        for (let i = 0; i < boxes.length; i++) {
+            var box = boxes[i];
+            if(box.id != "entrypoint")
+            {
+                box.style.display = "none";
+            }
+        }
+    }
     //prepare canvas to be callable by boxer functions
     var canvas_pointer = document.getElementById('main-canvas');
     if(canvas_pointer != null)

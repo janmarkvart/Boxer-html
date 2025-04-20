@@ -6,6 +6,19 @@
 </head>
 
 <body>
+    <doit-box id="entrypoint">
+        <div class="box-header">
+            <box-name contenteditable=true>entrypoint</box-name>
+            <div class="header-right">
+                <button class="boxcode-hide">show</button>
+                <button class="doit-execute">run</button>
+            </div>
+        </div>
+        <box-code contenteditable=true style="display: none;">
+            line-forward
+            <br>
+        </box-code>
+    </doit-box>
     <doit-box id="line-forward">
         <div class="box-header">
             <box-name contenteditable=true>line-forward</box-name>
@@ -24,6 +37,6 @@
         </box-code>
     </doit-box>
     <br>
-    <canvas id="main-canvas" width="500" height="500"></canvas>
+    <canvas id="main-canvas"></canvas>
 </body>
 </html>
