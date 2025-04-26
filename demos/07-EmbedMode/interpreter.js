@@ -221,7 +221,7 @@ function boxHeaderDelete(e)
     }
     console.log("parent found:");
     console.log(target);
-    target.remove();
+    if( confirm("Are you sure you want to delete this box?") == true) { target.remove(); }
 }
 
 function interpretBox(caller_box, variables = null)
