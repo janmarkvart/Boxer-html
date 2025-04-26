@@ -162,25 +162,19 @@ window.onload = function()
 function boxHeaderRun(e) 
 {
     var target = e.target;
-    console.log(target);
     while(target.nodeName != 'DOIT-BOX')
     {
         target = target.parentElement;
     }
-    console.log("parent found:");
-    console.log(target);
     interpretBox(target);
 }
 function boxHeaderShowHide(e) 
 {
     var target = e.target;
-    console.log(target);
     while(target.nodeName != 'DOIT-BOX' && target.nodeName != 'DATA-BOX')
     {
         target = target.parentElement;
     }
-    console.log("parent found:");
-    console.log(target);
     target_hide_button = target.getElementsByClassName("boxcode-hide")[0];
     target = target.getElementsByTagName('BOX-CODE')[0];
     if (target.style.display === "none") 
@@ -197,13 +191,10 @@ function boxHeaderShowHide(e)
 function boxHeaderDelete(e)
 {
     var target = e.target;
-    console.log(target);
     while(target.nodeName != 'DOIT-BOX' && target.nodeName != 'DATA-BOX')
     {
         target = target.parentElement;
     }
-    console.log("parent found:");
-    console.log(target);
     target.remove();
 }
 
@@ -230,7 +221,6 @@ function interpretBox(caller_box, variables = null)
 
 function parseBox(caller_box) 
 {
-    console.log("parsing box");
     var operations = [];
     var current_operation = {
         operation: null,
@@ -295,16 +285,12 @@ function parseBox(caller_box)
             }
             if(child.nodeName == "DATA-BOX")
             {
-                console.log("handling data-box");
-                console.log(child.getElementsByTagName("BOX-CODE")[0].innerText);
                 //try to create new variable
                 let possible_var = tryGrabVariable(child);
-                console.log(possible_var);
                 if(!isNaN(possible_var))
                 {
                     //integer value acquired
                     console.log("code is a number, handle as new int variable")
-                    
                     //if operation exists, add it as an operand
                     if(current_operation.operation != null)
                     {
@@ -324,7 +310,7 @@ function parseBox(caller_box)
                 }
                 else 
                 {
-                    //integer value acquired
+                    //text value acquired
                     console.log("code is a text, handle as new text variable");
                     //if operation exists, add it as an operand
                     if(current_operation.operation != null)
@@ -351,7 +337,6 @@ function parseBox(caller_box)
     {
         operations.push(current_operation);
     }
-    console.log("parsing done");
     return operations;
 }
 
@@ -367,21 +352,17 @@ function grabBoxCode(box)
 
 function evalBox(operations, variables = null)
 {
-    console.log("eval box with variables:");
-    console.log(variables);
+    //console.log("eval box with variables:");
+    //console.log(variables);
     operations.forEach(op => {
-        console.log(op);
+        //console.log(op);
         if(op.operation == 'input')
         {
             op.operands.forEach(operand => {
-                console.log("reading input variable: ");
-                console.log(operand);
-                console.log(variables);
                 let found = false;
                 let variables_iter = variables;
                 while(variables_iter != null)
                 {
-                    console.log("1");
                     if(variables_iter.name == null)
                     {
                         //catch it into provided variable name
@@ -402,7 +383,7 @@ function evalBox(operations, variables = null)
         {
             if(/*isNaN(Number(op.operands[i]))*/true)
             {
-                console.log("replacing variable "+op.operands[i]+" with its value");
+                //console.log("replacing variable "+op.operands[i]+" with its value");
                 //is variable to be translated
                 let variables_copy = variables;
                 while(variables_copy != null)
@@ -410,14 +391,13 @@ function evalBox(operations, variables = null)
                     if(variables_copy.name === op.operands[i])
                     {
                         op.operands[i] = variables_copy.value;
-                        console.log("value found and updated: "+op.operands[i]);
+                        //console.log("value found and updated: "+op.operands[i]);
                         break;
                     }
                     variables_copy = variables_copy.next;
                 }
             }
         };
-        //console.log(variables);
         var call = primitives[op.operation];
         if(call != null)
         {
@@ -426,9 +406,7 @@ function evalBox(operations, variables = null)
         }
         if(op.operation == 'repeat')
         {
-            console.log(variables);
             op.operands.unshift(variables);
-            console.log(op.operands);
             repeat.apply(repeat, op.operands);
         }
         //NEW: handling data-box variable
@@ -451,9 +429,7 @@ function evalBox(operations, variables = null)
         }
 
         //simple call to another box (or invalid operation)
-        console.log("looking for box:");
         var box = tryFindBox(op.operation);
-        console.log(box);
         if(box != null)
         {
             let new_var = variables;
@@ -463,7 +439,6 @@ function evalBox(operations, variables = null)
                 let num = Number(curr_operand);
                 if(num != NaN)
                 {
-                    console.log("adding new var:");
                     let tmp = new_var;
                     new_var = {
                         name: null,
@@ -484,7 +459,6 @@ function tryFindBox(box_id)
 
 function forward(distance)
 {
-    console.log("move forward "+distance);
     canvas_x = canvas_x + Math.sin(canvas_rotation/180*Math.PI)*distance;
     canvas_y = canvas_y + Math.cos(canvas_rotation/180*Math.PI)*distance;
     canvas_context.lineTo(canvas_x,canvas_y);
@@ -493,7 +467,6 @@ function forward(distance)
 
 function skip(distance)
 {
-    console.log("skip forward "+distance);
     canvas_x = canvas_x + Math.sin(canvas_rotation/180*Math.PI)*Number(distance);
     canvas_y = canvas_y + Math.cos(canvas_rotation/180*Math.PI)*Number(distance);
     canvas_context.moveTo(canvas_x,canvas_y);
@@ -503,15 +476,12 @@ function skip(distance)
 function rotate(degrees)
 {
     canvas_rotation = (canvas_rotation+Number(degrees))%360;
-    console.log("New canvas rotation: "+canvas_rotation);
 }
 
 function repeat(variables, times, box)
 {
-    console.log("repeating "+box+" "+times+" times with variable: "+variables);
     for(let i = 0; i < times; i++)
     {
-        console.log(i+":");
         interpretBox(box, variables);
     }
 }
