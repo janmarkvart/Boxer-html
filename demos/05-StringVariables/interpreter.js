@@ -25,9 +25,9 @@ var doitbox_template =
 <div class="box-header">
 <box-name>newdoitbox</box-name>
 <div class="header-right">
-<button class="boxcode-hide" onclick="boxHeaderShowHide(event)">hide</button>
-<button class="doit-execute" onclick="boxHeaderRun(event)">run</button>
-<button class="deletebox" onclick="boxHeaderDelete(event)">delete</button>
+<button class="boxcode-hide" onclick="boxHeaderShowHide(event)"><i class="fa-regular fa-window-minimize"></i></button>
+<button class="doit-execute" onclick="boxHeaderRun(event)"><i class="fa-regular fa-square-caret-right"></i></button>
+<button class="deletebox" onclick="boxHeaderDelete(event)"><i class="fa-regular fa-trash-can"></i></button>
 </div>
 </div>
 <box-code contenteditable=true>
@@ -43,8 +43,8 @@ var databox_template =
 <div class="box-header">
 <box-name>newdatabox</box-name>
 <div class="header-right">
-<button class="boxcode-hide" onclick="boxHeaderShowHide(event)">hide</button>
-<button class="deletebox" onclick="boxHeaderDelete(event)">delete</button>
+<button class="boxcode-hide" onclick="boxHeaderShowHide(event)"><i class="fa-regular fa-window-minimize"></i></button>
+<button class="deletebox" onclick="boxHeaderDelete(event)"><i class="fa-regular fa-trash-can"></i></button>
 </div>
 </div>
 <box-code contenteditable=true>
@@ -180,12 +180,14 @@ function boxHeaderShowHide(e)
     if (target.style.display === "none") 
     {
         target.style.display = "inline-block";
-        target_hide_button.innerText = "hide";
+        target_hide_button.childNodes[0].classList.remove("fa-window-maximize");
+        target_hide_button.childNodes[0].classList.add("fa-window-minimize");
     } 
     else 
     {
         target.style.display = "none";
-        target_hide_button.innerText = "show";
+        target_hide_button.childNodes[0].classList.remove("fa-window-minimize");
+        target_hide_button.childNodes[0].classList.add("fa-window-maximize");
     }
 }
 function boxHeaderDelete(e)
