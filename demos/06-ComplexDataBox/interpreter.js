@@ -5,10 +5,15 @@ var canvas_y;
 var canvas_rotation = 45;
 
 var primitives = {
-    "forward": {function: forward, argcount: 1},
-    "skip":  {function: skip, argcount: 1},
-    "rotate":  {function: rotate, argcount: 1},
-    "log": {function: log, argcount: 1}
+    "forward": {function: forward, argcount: 1, needs_variables: false},
+    "skip":  {function: skip, argcount: 1, needs_variables: false},
+    "rotate":  {function: rotate, argcount: 1, needs_variables: false},
+    "log": {function: log, argcount: 1, needs_variables: false},
+    "nested_code": {function: interpretBox, argcount: 2, needs_variables: true},
+    //"change": {function: change, argcount: 2, needs_variables: false},//WIP
+    "repeat": {function: repeat, argcount: 3, needs_variables: true},
+    "for": {function: boxer_for, argcount: 4, needs_variables: true},
+    "if": {function: boxer_if, argcount: 4, needs_variables: true}
 };
 
 var boxcode_template = 
@@ -174,7 +179,7 @@ function boxHeaderRun(e)
         value: target,
         next: null
     }
-    interpretBox(target, initial_variable);
+    interpretBox(initial_variable, target);
 }
 function boxHeaderShowHide(e) 
 {
@@ -206,7 +211,7 @@ function boxHeaderDelete(e)
     if( confirm("Are you sure you want to delete this box?") == true) { target.remove(); }
 }
 
-function interpretBox(caller_box, variables = null)
+function interpretBox(variables, caller_box)
 {
     console.log("interpreting new box");
     console.log(caller_box);
@@ -429,34 +434,23 @@ function evalBox(operations, variables = null)
         var call = primitives[op.operation];
         if(call != null)
         {
+            if(call.needs_variables == true)
+            {
+                op.operands.unshift(variables);
+            }
             call.function.apply(call.function, op.operands);
             return;
         }
-        if(op.operation == 'repeat')
-        {
-            op.operands.unshift(variables);
-            repeat.apply(repeat, op.operands);
-        }
-        if(op.operation == 'for')
-        {
-            op.operands.unshift(variables);
-            boxer_for.apply(boxer_for, op.operands);
-        }
-        if(op.operation == 'if')
-        {
-            op.operands.unshift(variables);
-            boxer_if.apply(boxer_if, op.operands);
-        }
-        //NEW: handling data-box variable
         if(op.operation == "new_var")
         {
             variables = addNewVariable(variables, op.operands);
         }
-        if(op.operation == "nested_code") {
+        /*if(op.operation == "nested_code") {
             interpretBox(op.operands[0], variables);
-        }
+        }*/
 
         //simple call to another box (or invalid operation)
+        /*
         var box = tryFindBox(op.operation);
         if(box != null)
         {
@@ -476,7 +470,7 @@ function evalBox(operations, variables = null)
                 }
             }
             interpretBox(box, new_var);
-        }
+        }*/
     });
 }
 
@@ -560,7 +554,7 @@ function repeat(variables, times, box)
 {
     for(let i = 0; i < times; i++)
     {
-        interpretBox(box, variables);
+        interpretBox(variables, box);
     }
 }
 
@@ -587,7 +581,7 @@ function boxer_for(variables, iter, check, source, box)
         {
             let new_var = [iter, elem.value];
             variables = addNewVariable(variables, new_var);
-            interpretBox(box, variables);
+            interpretBox(variables, box);
         });
     }
 }
@@ -596,6 +590,6 @@ function boxer_if(variables, left, comparator, right, box)
 {
     if(eval("\""+left +"\""+ comparator +"\""+ right +"\" ? true : false"))
     {
-        interpretBox(box, variables);
+        interpretBox(variables, box);
     }
 }
