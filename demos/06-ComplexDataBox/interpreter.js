@@ -232,6 +232,8 @@ function interpretBox(caller_box, variables = null)
 function parseBox(caller_box) 
 {
     var operations = [];
+    var variables = [];
+    var nested_doits = [];
     var current_operation = {
         operation: null,
         operands: []
@@ -292,6 +294,13 @@ function parseBox(caller_box)
                     //is part of repeat
                     current_operation.operands.push(child);
                 }
+                //also add is as a "variable"
+                let doitbox_id = child.id;
+                let doitbox_content = child.getElementsByTagName('BOX-CODE')[0].childNodes;
+                nested_doits.push({
+                    operation: "nested_doit",
+                    operands: [doitbox_id, doitbox_content]
+                });
             }
             if(child.nodeName == "DATA-BOX")
             {
@@ -306,17 +315,16 @@ function parseBox(caller_box)
                     {
                         current_operation.operands.push(possible_var);
                         operations.push(current_operation);
+                        current_operation = {
+                            operation: null,
+                            operands: []
+                        };
                     }
                     //and add new op to create variable in eval box
-                    current_operation = {
+                    variables.push({
                         operation: "new_var",
                         operands: [child.getElementsByTagName("BOX-NAME")[0].innerText, possible_var]
-                    };
-                    operations.push(current_operation);
-                    current_operation = {
-                        operation: null,
-                        operands: []
-                    };
+                    });
                 }
                 else
                 {
@@ -325,28 +333,29 @@ function parseBox(caller_box)
                     if(current_operation.operation != null)
                     {
                         operations.push(current_operation);
+                        current_operation = {
+                            operation: null,
+                            operands: []
+                        };
                     }
                     //and add new op to create variable in eval box
-                    current_operation = {
+                    variables.push({
                         operation: "new_var",
                         operands: [child.getElementsByTagName("BOX-NAME")[0].innerText, complex_variable]
-                    };
-                    operations.push(current_operation);
-                    current_operation = {
-                        operation: null,
-                        operands: []
-                    };
-                        
+                    });
                 }
             }
         }
-
     });
     if(current_operation.operation != null)
     {
         operations.push(current_operation);
     }
-    return operations;
+    //merge all three types together in a way that all variables are prepared first, then boxes, then other operations
+    //this ensures all variables and doit-boxes are ready for potential use in operations, 
+    // eliminating the need for a more complex evaluation down the line
+    all_operations = variables.concat(nested_doits, operations);
+    return all_operations;
 }
 
 function grabBoxCode(box)
@@ -444,10 +453,6 @@ function evalBox(operations, variables = null)
             variables = addNewVariable(variables, op.operands);
         }
         if(op.operation == "nested_code") {
-            interpretBox(op.operands[0], variables);
-        }
-        if(op.operation == "nested_doit")
-        {
             interpretBox(op.operands[0], variables);
         }
 
