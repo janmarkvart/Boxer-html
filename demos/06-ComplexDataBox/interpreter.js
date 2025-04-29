@@ -59,6 +59,12 @@ _
 <br>
 `
 
+var boxer_templates = {
+    "[": {tag_name : "box-code", template: boxcode_template},
+    "]": {tag_name : "doit-box", template: doitbox_template},
+    "{": {tag_name : "data-box", template: databox_template}
+}
+
 window.onclick = function(e) 
 {
     var original_target = e.target;
@@ -79,52 +85,38 @@ window.onclick = function(e)
         original_target.removeEventListener("blur",onleave);
     });
     if(original_target.nodeName == 'BOX-CODE')
-    {
-        original_target.onkeyup = function(e)
         {
-            if(original_target.innerHTML.indexOf("[") > 0)
+            original_target.onkeyup = function(e)
             {
-                console.log("make new box-code");
-                original_target.innerHTML = original_target.innerHTML.replace("[",boxcode_template);
-                var box_code_list = original_target.getElementsByTagName('box-code');
-                var new_box_code = box_code_list[box_code_list.length -1];
-                var s = window.getSelection();
-                var r = document.createRange();
-                r.setStart(new_box_code, 0);
-                r.setEnd(new_box_code, 1);
-                s.removeAllRanges();
-                s.addRange(r);
-            }
-            if(original_target.innerHTML.indexOf("]") > 0)
-            {
-                console.log("make new doit-box");
-                original_target.innerHTML = original_target.innerHTML.replace("]",doitbox_template);
-                var doit_box_list = original_target.getElementsByTagName('doit-box');
-                var new_doit_box = doit_box_list[doit_box_list.length -1];
-                var code_focus = new_doit_box.getElementsByTagName('box-code')[0];
-                var s = window.getSelection();
-                var r = document.createRange();
-                r.setStart(code_focus, 0);
-                r.setEnd(code_focus, 1);
-                s.removeAllRanges();
-                s.addRange(r);
-            }
-            if(original_target.innerHTML.indexOf("{") > 0)
-            {
-                console.log("make new data-box");
-                original_target.innerHTML = original_target.innerHTML.replace("{",databox_template);
-                var data_box_list = original_target.getElementsByTagName('data-box');
-                var new_data_box = data_box_list[data_box_list.length -1];
-                var code_focus = new_data_box.getElementsByTagName('box-code')[0];
-                var s = window.getSelection();
-                var r = document.createRange();
-                r.setStart(code_focus, 0);
-                r.setEnd(code_focus, 1);
-                s.removeAllRanges();
-                s.addRange(r);
+                //detect whether user pressed a key which corresponds to a box template
+                for(var key in boxer_templates)
+                {
+                    if(original_target.innerHTML.indexOf(key) > 0)
+                    {
+                        insertBox(original_target, key);
+                    }
+                };
             }
         }
+}
+
+function insertBox(original_target, box_type)
+{
+    //inserts a new box into the program, based on the key pressed
+    var box_template = boxer_templates[box_type];
+    original_target.innerHTML = original_target.innerHTML.replace(box_type,box_template.template);
+    var box_list = original_target.getElementsByTagName(box_template.tag_name);
+    var new_box = box_list[box_list.length -1];
+    if(box_template.tag_name != "box-code")
+    {
+        new_box = new_box.getElementsByTagName('box-code')[0];
     }
+    var s = window.getSelection();
+    var r = document.createRange();
+    r.setStart(new_box, 0);
+    r.setEnd(new_box, 1);
+    s.removeAllRanges();
+    s.addRange(r);
 }
 
 window.onload = function() 
