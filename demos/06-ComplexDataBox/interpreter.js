@@ -162,12 +162,19 @@ window.onload = function()
 
 function boxHeaderRun(e) 
 {
+    //find the box that was clicked on
     var target = e.target;
     while(target.nodeName != 'DOIT-BOX')
     {
         target = target.parentElement;
     }
-    interpretBox(target);
+    var initial_variable = 
+    {
+        name: "originalscope",
+        value: target,
+        next: null
+    }
+    interpretBox(target, initial_variable);
 }
 function boxHeaderShowHide(e) 
 {
@@ -208,10 +215,12 @@ function interpretBox(caller_box, variables = null)
     var operations;
     if(caller_box.nodeType == 1)
     {
+        //standalone box-code
         operations = parseBox(caller_box);
     }
     else
     {
+        //doit-box or data-box
         var box = document.getElementById(caller_box);
         operations = parseBox(box);
     }
@@ -371,6 +380,7 @@ function evalBox(operations, variables = null)
         }
         if(op.operation == 'change')
         {
+            //op.operands.unshift(called_box);
             change.apply(change.function, op.operands);
         }
         for(let i = 0; i< op.operands.length; i++)
