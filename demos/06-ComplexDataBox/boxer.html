@@ -243,6 +243,106 @@
             forward 5
         </box-code>
     </doit-box>
+    <doit-box id="inner1">
+        <div class="box-header">
+            <box-name contenteditable=true>inner1</box-name>
+            <div class="header-right">
+                <button class="boxcode-hide">hide</button>
+                <button class="doit-execute">run</button>
+                <button class="deletebox">delete</button>
+            </div>
+        </div>
+        <box-code contenteditable=true>
+            log somewhere?
+            <br>
+        </box-code>
+    </doit-box>
+    <doit-box id="wrapperer">
+        <div class="box-header">
+            <box-name contenteditable=true>wrapperer</box-name>
+            <div class="header-right">
+                <button class="boxcode-hide">hide</button>
+                <button class="doit-execute">run</button>
+                <button class="deletebox">delete</button>
+            </div>
+        </div>
+        <box-code contenteditable=true>
+            <doit-box id="inner1">
+                <div class="box-header">
+                    <box-name contenteditable=true>inner1</box-name>
+                    <div class="header-right">
+                        <button class="boxcode-hide">hide</button>
+                        <button class="doit-execute">run</button>
+                        <button class="deletebox">delete</button>
+                    </div>
+                </div>
+                <box-code contenteditable=true>
+                    log there
+                    <br>
+                </box-code>
+            </doit-box>
+            <br>
+            <doit-box id="wrapper">
+                <div class="box-header">
+                    <box-name contenteditable=true>wrapper</box-name>
+                    <div class="header-right">
+                        <button class="boxcode-hide">hide</button>
+                        <button class="doit-execute">run</button>
+                        <button class="deletebox">delete</button>
+                    </div>
+                </div>
+                <box-code contenteditable=true>
+                    <doit-box id="inner1">
+                        <div class="box-header">
+                            <box-name contenteditable=true>inner1</box-name>
+                            <div class="header-right">
+                                <button class="boxcode-hide">hide</button>
+                                <button class="doit-execute">run</button>
+                                <button class="deletebox">delete</button>
+                            </div>
+                        </div>
+                        <box-code contenteditable=true>
+                            log here
+                            <br>
+                        </box-code>
+                    </doit-box>
+                    <br>
+                    <doit-box id="entrypoint">
+                        <div class="box-header">
+                            <box-name contenteditable=true>entrypoint</box-name>
+                            <div class="header-right">
+                                <button class="boxcode-hide">hide</button>
+                                <button class="doit-execute">run</button>
+                                <button class="deletebox">delete</button>
+                            </div>
+                        </div>
+                        <box-code contenteditable=true>
+                            <doit-box id="inner1">
+                                <div class="box-header">
+                                    <box-name contenteditable=true>inner1</box-name>
+                                    <div class="header-right">
+                                        <button class="boxcode-hide">hide</button>
+                                        <button class="doit-execute">run</button>
+                                        <button class="deletebox">delete</button>
+                                    </div>
+                                </div>
+                                <box-code contenteditable=true>
+                                    log there
+                                    <br>
+                                </box-code>
+                            </doit-box>
+                            <br>
+                            log hello
+                            <br>
+                            inner1
+                            <br>
+                        </box-code>
+                    </doit-box>
+                </box-code>
+            </doit-box>
+            <br>
+        </box-code>
+    </doit-box>
     <br>
     <canvas id="main-canvas" width="500" height="500"></canvas>
 </body>

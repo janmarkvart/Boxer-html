@@ -301,7 +301,7 @@ function parseBox(caller_box)
                 }
                 //also add is as a "variable"
                 let doitbox_id = child.id;
-                let doitbox_content = child.getElementsByTagName('BOX-CODE')[0].childNodes;
+                let doitbox_content = child.getElementsByTagName('BOX-CODE')[0];
                 nested_doits.push({
                     operation: "nested_doit",
                     operands: [doitbox_id, doitbox_content]
@@ -392,11 +392,11 @@ function evalBox(operations, variables = null)
             });
             return;
         }
-        if(op.operation == 'change')
+        /*if(op.operation == 'change')
         {
             //op.operands.unshift(called_box);
             change.apply(change.function, op.operands);
-        }
+        }*/
         for(let i = 0; i< op.operands.length; i++)
         {
             if(typeof op.operands[i] === 'string')
@@ -443,34 +443,92 @@ function evalBox(operations, variables = null)
         }
         if(op.operation == "new_var")
         {
+            //create new variable
             variables = addNewVariable(variables, op.operands);
+            return;
         }
-        /*if(op.operation == "nested_code") {
-            interpretBox(op.operands[0], variables);
-        }*/
-
-        //simple call to another box (or invalid operation)
-        /*
-        var box = tryFindBox(op.operation);
-        if(box != null)
+        if(op.operation == "nested_doit")
         {
-            let new_var = variables;
-            for(let i = op.operands.length -1 ; i >= 0; i--)
+            //add doit-box to variables
+            variables = addNewVariable(variables, op.operands);
+            return;
+        }
+
+        //call to another box (or invalid operation)
+
+        var curr = variables;
+        while(curr.next != null) {
+            if(curr.name == op.operation)
             {
-                let curr_operand = op.operands[i];
-                let num = Number(curr_operand);
-                if(num != NaN)
+                //found the box to call
+                let box = curr.value;
+                //add new variables to pass to potential input in called box
+                let new_var = variables;
+                for(let i = op.operands.length -1 ; i >= 0; i--)
                 {
-                    let tmp = new_var;
-                    new_var = {
-                        name: null,
-                        value: num,
-                        next: tmp
-                    };
+                    let curr_operand = op.operands[i];
+                    let num = Number(curr_operand);
+                    if(num != NaN)
+                    {
+                        let tmp = new_var;
+                        new_var = {
+                            name: null,
+                            value: num,
+                            next: tmp
+                        };
+                    }
                 }
+                interpretBox(variables, box);
+                return;
             }
-            interpretBox(box, new_var);
-        }*/
+            curr = curr.next;
+        }
+
+        //box hasn't been found in existing variables, check higher scopes of original caller box
+        //since the original caller is saved as the last variable, we can start checking:
+        console.log("searching for box in higher scopes");
+        var curr_scope = curr.value.parentElement;
+        console.log(curr.value.parentElement.parentElement);
+        while(curr_scope.parentElement != null) 
+        {
+            if(curr_scope.nodeName == "BOX-CODE")
+            {
+                var candidates = curr_scope.childNodes;
+                var found = false;
+                candidates.forEach(candidate => 
+                {
+                    console.log(candidate);
+                    if(candidate.nodeType == Node.ELEMENT_NODE && candidate.id == op.operation)
+                    {
+                        //found the box to call
+                        let box = candidate.getElementsByTagName('BOX-CODE')[0];
+                        //add new variables to pass to potential input in called box
+                        let new_var = variables;
+                        for(let i = op.operands.length -1 ; i >= 0; i--)
+                        {
+                            let curr_operand = op.operands[i];
+                            let num = Number(curr_operand);
+                            if(num != NaN)
+                            {
+                                let tmp = new_var;
+                                new_var = {
+                                    name: null,
+                                    value: num,
+                                    next: tmp
+                                };
+                            }
+                        }
+                        found = true;
+                        interpretBox(variables, box);
+                        return;
+                    }
+                });
+                //end search when we found the (nearest) fitting box
+                console.log("found box in higher scope, ending search...");
+                if(found == true) {return;}
+            }
+            curr_scope = curr_scope.parentElement;
+        }
     });
 }
 
