@@ -421,6 +421,9 @@ function evalBox(operations, variables = null)
                     }
                     variables_copy = variables_copy.next;
                 }
+                //TODO: if variable not found, similarly to how called doit boxes are looked up,
+                //look into higher scopes of the original caller box to see if the desired variable is defined there
+                //also add it into variables for potential future use (as this lookup can be expensive)
             }
         };
         var call = primitives[op.operation];
@@ -433,21 +436,14 @@ function evalBox(operations, variables = null)
             call.function.apply(call.function, op.operands);
             return;
         }
-        if(op.operation == "new_var")
+        if(op.operation == "new_var" || op.operation == "nested_doit")
         {
-            //create new variable
-            variables = addNewVariable(variables, op.operands);
-            return;
-        }
-        if(op.operation == "nested_doit")
-        {
-            //add doit-box to variables
+            //create new variable (whether data or nested doit)
             variables = addNewVariable(variables, op.operands);
             return;
         }
 
         //call to another box (or invalid operation)
-
         var curr = variables;
         while(curr.next != null) {
             if(curr.name == op.operation)
@@ -475,6 +471,7 @@ function evalBox(operations, variables = null)
             }
             curr = curr.next;
         }
+        //NOTE: above part is called dynamic scoping
 
         //box hasn't been found in existing variables, check higher scopes of original caller box
         //since the original caller is saved as the last variable, we can start checking:
@@ -483,13 +480,15 @@ function evalBox(operations, variables = null)
         console.log(curr.value.parentElement.parentElement);
         while(curr_scope.parentElement != null) 
         {
-            if(curr_scope.nodeName == "BOX-CODE")
+            //TODO: perhaps introducing a top-level "WORLD" box/es would be better than using body
+            //(also more in line with the original boxer/sunrise) 
+            if(curr_scope.nodeName == "BOX-CODE" || curr_scope.nodeName == "BODY")
             {
                 var candidates = curr_scope.childNodes;
                 var found = false;
                 candidates.forEach(candidate => 
                 {
-                    console.log(candidate);
+                    //console.log(candidate);
                     if(candidate.nodeType == Node.ELEMENT_NODE && candidate.id == op.operation)
                     {
                         //found the box to call
@@ -521,6 +520,7 @@ function evalBox(operations, variables = null)
             }
             curr_scope = curr_scope.parentElement;
         }
+        console.log("no box found within scope => invalid operation");
     });
 }
 
