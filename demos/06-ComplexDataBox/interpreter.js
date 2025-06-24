@@ -364,7 +364,15 @@ function evalBox(operations, variables = null)
 {
     //console.log("eval box with variables:");
     //console.log(variables);
-    operations.forEach(op => {
+    var processed_op_idx = 0;
+    console.log(operations);
+    while(processed_op_idx < operations.length)
+    {
+        let op = operations[processed_op_idx];
+        processed_op_idx++;
+        console.log(processed_op_idx);
+        console.log("processing operation: ");
+        console.log(op.operation);
         if(op.operation == 'input')
         {
             op.operands.forEach(operand => {
@@ -382,7 +390,7 @@ function evalBox(operations, variables = null)
                     variables_iter = variables_iter.next;
                 }
             });
-            return;
+            continue;
         }
         /*if(op.operation == 'change')
         {
@@ -434,20 +442,23 @@ function evalBox(operations, variables = null)
                 op.operands.unshift(variables);
             }
             call.function.apply(call.function, op.operands);
-            return;
+            continue;
         }
         if(op.operation == "new_var" || op.operation == "nested_doit")
         {
+            console.log("creating new variable or nested doit box");
             //create new variable (whether data or nested doit)
             variables = addNewVariable(variables, op.operands);
-            return;
+            continue;
         }
 
         //call to another box (or invalid operation)
+        var found = false;
         var curr = variables;
         while(curr.next != null) {
             if(curr.name == op.operation)
             {
+                found = true;
                 //found the box to call
                 let box = curr.value;
                 //add new variables to pass to potential input in called box
@@ -466,11 +477,15 @@ function evalBox(operations, variables = null)
                         };
                     }
                 }
-                interpretBox(variables, box);
-                return;
+                var new_operations = parseBox(box);
+                console.log(new_operations);
+                operations.splice(processed_op_idx, 0, ...new_operations);
+                console.log(operations);
+                break;
             }
             curr = curr.next;
         }
+        if(found == true) {continue;}
         //NOTE: above part is called dynamic scoping
 
         //box hasn't been found in existing variables, check higher scopes of original caller box
@@ -485,7 +500,6 @@ function evalBox(operations, variables = null)
             if(curr_scope.nodeName == "BOX-CODE" || curr_scope.nodeName == "BODY")
             {
                 var candidates = curr_scope.childNodes;
-                var found = false;
                 candidates.forEach(candidate => 
                 {
                     //console.log(candidate);
@@ -510,18 +524,25 @@ function evalBox(operations, variables = null)
                             }
                         }
                         found = true;
-                        interpretBox(variables, box);
+                        //interpretBox(variables, box);
+                        var new_operations = parseBox(box);
+                        console.log(new_operations);
+                        operations.splice(processed_op_idx, 0, ...new_operations);
                         return;
                     }
                 });
                 //end search when we found the (nearest) fitting box
                 console.log("found box in higher scope, ending search...");
-                if(found == true) {return;}
+                if(found == true) {break;}
             }
             curr_scope = curr_scope.parentElement;
         }
-        console.log("no box found within scope => invalid operation");
-    });
+        if(found == false)
+        {
+            console.log("no box found within scope => invalid operation");
+        }
+    }
+    console.log(operations.length);
 }
 
 function addNewVariable(variables, addition)
