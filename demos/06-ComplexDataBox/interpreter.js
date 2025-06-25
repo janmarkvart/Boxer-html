@@ -10,7 +10,7 @@ var primitives = {
     "rotate":  {function: rotate, argcount: 1, needs_variables: false},
     "log": {function: log, argcount: 1, needs_variables: false},
     "nested_code": {function: interpretBox, argcount: 2, needs_variables: true},
-    //"change": {function: change, argcount: 2, needs_variables: false},//WIP
+    "change": {function: change, argcount: 2, needs_variables: false},
     "repeat": {function: repeat, argcount: 3, needs_variables: true},
     "for": {function: boxer_for, argcount: 4, needs_variables: true},
     "if": {function: boxer_if, argcount: 4, needs_variables: true}
@@ -85,19 +85,19 @@ window.onclick = function(e)
         original_target.removeEventListener("blur",onleave);
     });
     if(original_target.nodeName == 'BOX-CODE')
+    {
+        original_target.onkeyup = function(e)
         {
-            original_target.onkeyup = function(e)
+            //detect whether user pressed a key which corresponds to a box template
+            for(var key in boxer_templates)
             {
-                //detect whether user pressed a key which corresponds to a box template
-                for(var key in boxer_templates)
+                if(original_target.innerHTML.indexOf(key) >= 0)
                 {
-                    if(original_target.innerHTML.indexOf(key) > 0)
-                    {
-                        insertBox(original_target, key);
-                    }
-                };
+                    insertBox(original_target, key);
+                }
             }
         }
+    }
 }
 
 function insertBox(original_target, box_type)
@@ -399,7 +399,7 @@ function evalBox(operations, variables = null)
         }*/
         
         //process operation operands (replace variable names with their values if applicable)
-        op.operands = processOperands(op.operands, variables);
+        op.operands = processOperands(op, variables);
 
         var call = primitives[op.operation];
         if(call != null)
@@ -512,14 +512,16 @@ function evalBox(operations, variables = null)
     console.log(operations.length);
 }
 
-function processOperands(operands, variables)
+function processOperands(op, variables)
 {
-    for(let i = 0; i< operands.length; i++)
+    let changeModifier = 0;
+    if(op.operation === "change") {changeModifier = 1;}
+    for(let i = 0 + changeModifier; i < op.operands.length; i++)
     {
-        if(typeof operands[i] === 'string')
+        if(typeof op.operands[i] === 'string')
         {
             //console.log("replacing variable "+operands[i]+" with its value");
-            let spl = operands[i].split('.');
+            let spl = op.operands[i].split('.');
             let spl_idx = 0;
             //is variable to be translated
             let variables_copy = variables;
@@ -529,7 +531,7 @@ function processOperands(operands, variables)
                 if(variables_copy.name === spl[spl_idx])
                 {
                     variables_nested = variables_copy;
-                    operands[i] = variables_nested.value;
+                    op.operands[i] = variables_nested.value;
                     spl_idx++;
                     //looking further into the found value (item.x etc.)
                     while(spl_idx < spl.length)
@@ -540,8 +542,8 @@ function processOperands(operands, variables)
                         });
                         spl_idx++;
                     }
-                    operands[i] = variables_nested.value;
-                    //console.log("value found and updated: "+operands[i]);
+                    op.operands[i] = variables_nested.value;
+                    //console.log("value found and updated: "+op.operands[i]);
                     break;
                 }
                 variables_copy = variables_copy.next;
@@ -550,7 +552,7 @@ function processOperands(operands, variables)
             //look into higher scopes of the original caller box to see if the desired variable is defined there
         }
     }
-    return operands;
+    return op.operands;
 }
 
 function addNewVariable(variables, addition)
