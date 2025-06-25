@@ -397,43 +397,10 @@ function evalBox(operations, variables = null)
             //op.operands.unshift(called_box);
             change.apply(change.function, op.operands);
         }*/
-        for(let i = 0; i< op.operands.length; i++)
-        {
-            if(typeof op.operands[i] === 'string')
-            {
-                //console.log("replacing variable "+op.operands[i]+" with its value");
-                let spl = op.operands[i].split('.');
-                let spl_idx = 0;
-                //is variable to be translated
-                let variables_copy = variables;
-                while(variables_copy != null)
-                {
-                    //first level of lookup
-                    if(variables_copy.name === spl[spl_idx])
-                    {
-                        variables_nested = variables_copy;
-                        op.operands[i] = variables_nested.value;
-                        spl_idx++;
-                        //looking further into the found value (item.x etc.)
-                        while(spl_idx < spl.length)
-                        {
-                            variables_nested.value.forEach(item => 
-                            {
-                                if(item.name == spl[spl_idx]) {variables_nested = item;}
-                            });
-                            spl_idx++;
-                        }
-                        op.operands[i] = variables_nested.value;
-                        //console.log("value found and updated: "+op.operands[i]);
-                        break;
-                    }
-                    variables_copy = variables_copy.next;
-                }
-                //TODO: if variable not found, similarly to how called doit boxes are looked up,
-                //look into higher scopes of the original caller box to see if the desired variable is defined there
-                //also add it into variables for potential future use (as this lookup can be expensive)
-            }
-        };
+        
+        //process operation operands (replace variable names with their values if applicable)
+        op.operands = processOperands(op.operands, variables);
+
         var call = primitives[op.operation];
         if(call != null)
         {
@@ -543,6 +510,47 @@ function evalBox(operations, variables = null)
         }
     }
     console.log(operations.length);
+}
+
+function processOperands(operands, variables)
+{
+    for(let i = 0; i< operands.length; i++)
+    {
+        if(typeof operands[i] === 'string')
+        {
+            //console.log("replacing variable "+operands[i]+" with its value");
+            let spl = operands[i].split('.');
+            let spl_idx = 0;
+            //is variable to be translated
+            let variables_copy = variables;
+            while(variables_copy != null)
+            {
+                //first level of lookup
+                if(variables_copy.name === spl[spl_idx])
+                {
+                    variables_nested = variables_copy;
+                    operands[i] = variables_nested.value;
+                    spl_idx++;
+                    //looking further into the found value (item.x etc.)
+                    while(spl_idx < spl.length)
+                    {
+                        variables_nested.value.forEach(item => 
+                        {
+                            if(item.name == spl[spl_idx]) {variables_nested = item;}
+                        });
+                        spl_idx++;
+                    }
+                    operands[i] = variables_nested.value;
+                    //console.log("value found and updated: "+operands[i]);
+                    break;
+                }
+                variables_copy = variables_copy.next;
+            }
+            //TODO: if variable not found, similarly to how called doit boxes are looked up,
+            //look into higher scopes of the original caller box to see if the desired variable is defined there
+        }
+    }
+    return operands;
 }
 
 function addNewVariable(variables, addition)
