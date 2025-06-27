@@ -400,6 +400,23 @@ function evalBox(operations, variables = null)
         //process operation operands (replace variable names with their values if applicable)
         op.operands = processOperands(op, variables);
 
+        if(op.operation == 'change')
+        {
+            //special case for change operation:
+            //on top of its "primitive" functionality, also modify the existing variable
+            let variables_copy = variables;
+            while(variables_copy != null)
+            {
+                if(variables_copy.name == op.operands[0])
+                {
+                    //found the variable to change
+                    variables_copy.value = op.operands[1];
+                    break;
+                }
+                variables_copy = variables_copy.next;
+            }
+        }
+
         var call = primitives[op.operation];
         if(call != null)
         {
