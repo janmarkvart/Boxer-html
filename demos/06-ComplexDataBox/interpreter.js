@@ -74,16 +74,15 @@ window.onclick = function(e)
     {
         target = target.parentElement;
     }
-    original_target.addEventListener("blur", function onleave()
+    document.activeElement.addEventListener("blur", function onleave(ee)
     {
-        original_target.spellcheck = false;
+        document.activeElement.spellcheck = false;
         if(original_target.nodeName == 'BOX-NAME')
         {
             target.id = original_target.innerText;
-            //...
+            //TODO: detect and update possible user-defined template (target must be data-box!)
         }
-        original_target.removeEventListener("blur",onleave);
-    });
+    },{ once: true });//only triggers once, so no need to remove the listener manually
     if(original_target.nodeName == 'BOX-CODE')
     {
         original_target.onkeyup = function(e)
