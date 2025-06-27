@@ -391,11 +391,6 @@ function evalBox(operations, variables = null)
             });
             continue;
         }
-        /*if(op.operation == 'change')
-        {
-            //op.operands.unshift(called_box);
-            change.apply(change.function, op.operands);
-        }*/
         
         //process operation operands (replace variable names with their values if applicable)
         op.operands = processOperands(op, variables);
