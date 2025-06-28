@@ -85,7 +85,7 @@ window.onclick = function(e)
     },{ once: true });//only triggers once, so no need to remove the listener manually
     if(original_target.nodeName == 'BOX-CODE')
     {
-        original_target.onkeyup = function(e)
+        document.activeElement.onkeyup = function(e)
         {
             //detect whether user pressed a key which corresponds to a box template
             for(var key in boxer_templates)
