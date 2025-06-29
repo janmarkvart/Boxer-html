@@ -74,13 +74,61 @@ window.onclick = function(e)
     {
         target = target.parentElement;
     }
+    var box_id = target.id;
+    var was_user_template = false;
+    var previous_key = null;
+    if(target.nodeName == 'DATA-BOX')
+    {
+        let separated_id = box_id.split('_');
+        if(separated_id.length === 3 &&  separated_id[0] === "key" && separated_id[1].length === 1 
+            && separated_id[2] === "template" && target.nodeName == 'DATA-BOX')
+        {
+            //data-box was a template when we entered it
+            was_user_template = true;
+            previous_key = separated_id[1];
+        }
+    }
+    console.log("target box: " + target.id);
     document.activeElement.addEventListener("blur", function onleave(ee)
     {
         document.activeElement.spellcheck = false;
+        //check if box is template
+        let is_user_template = false;
+        let current_key = null;
+        let separated_new_id = original_target.innerText.split('_');
+        if(separated_new_id.length === 3 &&  separated_new_id[0] === "key" && separated_new_id[1].length === 1 
+            && separated_new_id[2] === "template" && target.nodeName == 'DATA-BOX') {is_user_template = true; current_key = separated_new_id[1];}
+
         if(original_target.nodeName == 'BOX-NAME')
         {
+            //box-name serves as box id
             target.id = original_target.innerText;
-            //TODO: detect and update possible user-defined template (target must be data-box!)
+            if(is_user_template == true)
+            {
+                //template created/updated
+                if(previous_key != null && current_key != previous_key)
+                {
+                    console.log("removing template "+previous_key+"...");
+                    delete boxer_templates[previous_key];
+                }
+                console.log("creating template "+current_key+"...");
+                boxer_templates[current_key] = {tag_name: 'user_'+current_key, template: target.getElementsByTagName('BOX-CODE')[0].innerHTML};
+            }
+            else if(was_user_template == true)
+            {
+                //box no longer serves as a template
+                console.log("removing template "+previous_key+"...");
+                delete boxer_templates[previous_key];
+            }
+        }
+        if(original_target.nodeName == 'BOX-CODE')
+        {
+            if(was_user_template == true)
+            {
+                //box is a template
+                console.log("updating code of template "+previous_key+"...");
+                boxer_templates[previous_key] = {tag_name: 'user_'+current_key, template: original_target.innerHTML};
+            }
         }
     },{ once: true });//only triggers once, so no need to remove the listener manually
     if(original_target.nodeName == 'BOX-CODE')
@@ -102,6 +150,7 @@ window.onclick = function(e)
 function insertBox(original_target, box_type)
 {
     //inserts a new box into the program, based on the key pressed
+    //TODO: this needs a makeover to support user-templates that may be just plaintext
     var box_template = boxer_templates[box_type];
     original_target.innerHTML = original_target.innerHTML.replace(box_type,box_template.template);
     var box_list = original_target.getElementsByTagName(box_template.tag_name);
