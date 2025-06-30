@@ -147,24 +147,49 @@ window.onclick = function(e)
     }
 }
 
-function insertBox(original_target, box_type)
+function insertBox(original_target, key)
 {
+    console.log(original_target);
     //inserts a new box into the program, based on the key pressed
-    //TODO: this needs a makeover to support user-templates that may be just plaintext
-    var box_template = boxer_templates[box_type];
-    original_target.innerHTML = original_target.innerHTML.replace(box_type,box_template.template);
-    var box_list = original_target.getElementsByTagName(box_template.tag_name);
-    var new_box = box_list[box_list.length -1];
-    if(box_template.tag_name != "box-code")
+    var box_template = boxer_templates[key];
+    templateInserter(original_target, key, box_template.template);
+    
+    if(key == "[" || key == "]" || key == "{")
     {
-        new_box = new_box.getElementsByTagName('box-code')[0];
+        //one of default templates
+        var box_list = original_target.getElementsByTagName(box_template.tag_name);
+        var new_box = box_list[box_list.length -1];
+        if(box_template.tag_name != "box-code")
+        {
+            new_box = new_box.getElementsByTagName('box-code')[0];
+        }
+        var s = window.getSelection();
+        var r = document.createRange();
+        r.setStart(new_box, 0);
+        r.setEnd(new_box, 1);
+        s.removeAllRanges();
+        s.addRange(r);
     }
-    var s = window.getSelection();
-    var r = document.createRange();
-    r.setStart(new_box, 0);
-    r.setEnd(new_box, 1);
-    s.removeAllRanges();
-    s.addRange(r);
+}
+
+function templateInserter(current_target, key, template)
+{
+    //recursively traverses the target element and replaces all text occurences of key with corresponding templates,
+    // whilst skipping any box-name elements, preventing self-replacement of templates
+    current_target.childNodes.forEach(child => {
+        if(child.nodeType == Node.TEXT_NODE)
+        {
+            if(child.data.indexOf(key) >= 0)
+            {
+                child.data = child.data.replaceAll(key, "");
+                child.after(document.createRange().createContextualFragment(template));
+            }
+        }
+        if(child.nodeName == 'DATA-BOX' || child.nodeName == 'DOIT-BOX')
+        {
+            templateInserter(child.getElementsByTagName('BOX-CODE')[0], key, template);
+        }
+    });
 }
 
 window.onload = function() 
