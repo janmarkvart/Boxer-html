@@ -317,21 +317,25 @@ function parseBox(caller_box)
     {
         box_code = caller_box.childNodes;
     }
-    box_code.forEach(child => {
+    for(let i = 0; i < box_code.length; i++)
+    {
+        let child = box_code[i];
         if(child.nodeType == Node.TEXT_NODE)
         {
             let trimmed = child.wholeText.trim();
-            if(trimmed == "") {return;}
+            if(trimmed == "") {continue;}
             let words = trimmed.split(/\s+/);
             let idx = 0;
             if(current_operation.operation == null)
             {
+                //input operation can only be first, otherwise we ignore it entirely
+                if(words[idx] == "input" && i != 0){continue;}
                 current_operation.operation = words[idx];
                 idx++;
             }
-            for(let i = idx; i < words.length; i++)
+            for(let j = idx; j < words.length; j++)
             {
-                current_operation.operands.push(words[i]);
+                current_operation.operands.push(words[j]);
             }
         }
         if(child.nodeType == Node.ELEMENT_NODE)
@@ -416,11 +420,16 @@ function parseBox(caller_box)
                 }
             }
         }
-    });
+    };
     if(current_operation.operation != null)
     {
         operations.push(current_operation);
     }
+    //add a clear operation to clear variables created in this scope
+    operations.push({
+        operation: "clear",
+        operands: [variables.length + nested_doits.length]
+    });
     //merge all three types together in a way that all variables are prepared first, then boxes, then other operations
     //this ensures all variables and doit-boxes are ready for potential use in operations, 
     // eliminating the need for a more complex evaluation down the line
@@ -463,6 +472,17 @@ function evalBox(operations, variables = null)
                     variables_iter = variables_iter.next;
                 }
             });
+            continue;
+        }
+        if(op.operation == 'clear')
+        {
+            //clear the variables of latest input
+            let variables_copy = variables;
+            for(let i = 0; i < op.operands; i++)
+            {
+                variables_copy = variables_copy.next;
+            }
+            variables = variables_copy;
             continue;
         }
         
@@ -510,7 +530,6 @@ function evalBox(operations, variables = null)
         while(curr.next != null) {
             if(curr.name == op.operation)
             {
-                found = true;
                 //found the box to call
                 let box = curr.value;
                 //add new variables to pass to potential input in called box
@@ -529,10 +548,14 @@ function evalBox(operations, variables = null)
                         };
                     }
                 }
+                found = true;
+                //interpretBox(new_var, box);
+                variables = new_var;
                 var new_operations = parseBox(box);
                 console.log(new_operations);
+                //add newly created variables to list of "clear on exit" variables
+                new_operations[new_operations.length - 1].operands[0] += op.operands.length;
                 operations.splice(processed_op_idx, 0, ...new_operations);
-                console.log(operations);
                 break;
             }
             curr = curr.next;
@@ -576,9 +599,12 @@ function evalBox(operations, variables = null)
                             }
                         }
                         found = true;
-                        //interpretBox(variables, box);
+                        //interpretBox(new_var, box);
+                        variables = new_var;
                         var new_operations = parseBox(box);
                         console.log(new_operations);
+                        //add newly created variables to list of "clear on exit" variables
+                        new_operations[new_operations.length - 1].operands[0] += op.operands.length;
                         operations.splice(processed_op_idx, 0, ...new_operations);
                         return;
                     }
@@ -594,7 +620,6 @@ function evalBox(operations, variables = null)
             console.log("no box found within scope => invalid operation");
         }
     }
-    console.log(operations.length);
 }
 
 function processOperands(op, variables)
@@ -605,6 +630,7 @@ function processOperands(op, variables)
     {
         if(typeof op.operands[i] === 'string')
         {
+            let found = false;
             //console.log("replacing variable "+operands[i]+" with its value");
             let spl = op.operands[i].split('.');
             let spl_idx = 0;
@@ -615,20 +641,27 @@ function processOperands(op, variables)
                 //first level of lookup
                 if(variables_copy.name === spl[spl_idx])
                 {
-                    variables_nested = variables_copy;
-                    op.operands[i] = variables_nested.value;
+                    found = true;
+                    let variables_nested = variables_copy;
                     spl_idx++;
                     //looking further into the found value (item.x etc.)
                     while(spl_idx < spl.length)
                     {
+                        found = false;
                         variables_nested.value.forEach(item => 
                         {
-                            if(item.name == spl[spl_idx]) {variables_nested = item;}
+                            if(item.name == spl[spl_idx]) {variables_nested = item; found = true;}
                         });
                         spl_idx++;
                     }
-                    op.operands[i] = variables_nested.value;
-                    //console.log("value found and updated: "+op.operands[i]);
+                    if(found) 
+                    {
+                        op.operands[i] = variables_nested.value;
+                    }
+                    else
+                    {
+                        op.operands[i] ="err";
+                    }
                     break;
                 }
                 variables_copy = variables_copy.next;
