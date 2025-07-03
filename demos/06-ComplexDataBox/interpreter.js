@@ -9,11 +9,7 @@ var primitives = {
     "skip":  {function: skip, argcount: 1, needs_variables: false},
     "rotate":  {function: rotate, argcount: 1, needs_variables: false},
     "log": {function: log, argcount: 1, needs_variables: false},
-    //"nested_code": {function: interpretBox, argcount: 2, needs_variables: true},//TODO: rework this
     "change": {function: change, argcount: 2, needs_variables: false}
-    //"repeat": {function: repeat, argcount: 3, needs_variables: true},
-    //"for": {function: boxer_for, argcount: 4, needs_variables: true},
-    //"if": {function: boxer_if, argcount: 4, needs_variables: true}
 };
 
 var boxcode_template = 
@@ -280,20 +276,7 @@ function interpretBox(variables, caller_box)
 {
     console.log("interpreting new box");
     console.log(caller_box);
-    console.log("with variables: ")
-    console.log(variables);
-    var operations;
-    if(caller_box.nodeType == 1)
-    {
-        //standalone box-code
-        operations = parseBox(caller_box);
-    }
-    else
-    {
-        //doit-box or data-box
-        var box = document.getElementById(caller_box);
-        operations = parseBox(box);
-    }
+    var operations = parseBox(caller_box);
     console.log("list of operations to eval");
     console.log(operations);
     evalBox(operations, variables);
@@ -444,8 +427,6 @@ function grabBoxCode(box)
 
 function evalBox(operations, variables = null)
 {
-    //console.log("eval box with variables:");
-    //console.log(variables);
     var processed_op_idx = 0;
     console.log(operations);
     while(processed_op_idx < operations.length)
@@ -777,12 +758,6 @@ function createComplexVariable(addition)
     return variable;
 }
 
-function tryFindBox(box_id)
-{
-    //deprecated
-    return document.getElementById(box_id);
-}
-
 function forward(distance)
 {
     canvas_x = canvas_x + Math.sin(canvas_rotation/180*Math.PI)*distance;
@@ -804,15 +779,6 @@ function rotate(degrees)
     canvas_rotation = (canvas_rotation+Number(degrees))%360;
 }
 
-function repeat(variables, times, box)
-{
-    //deprecated
-    for(let i = 0; i < times; i++)
-    {
-        interpretBox(variables, box);
-    }
-}
-
 function log(variable)
 {
     console.log("printing: " +variable);
@@ -822,31 +788,4 @@ function change(box_id, new_text)
 {
     var target_box_code = document.getElementById(box_id).getElementsByTagName('BOX-CODE')[0];
     target_box_code.innerText = new_text;
-}
-
-function boxer_for(variables, iter, check, source, box)
-{
-    //deprecated
-    console.log(variables);
-    console.log(iter);
-    console.log(check);
-    console.log(source);
-    if(check == "in")
-    {
-        source.forEach(elem => 
-        {
-            let new_var = [iter, elem.value];
-            variables = addNewVariable(variables, new_var);
-            interpretBox(variables, box);
-        });
-    }
-}
-
-function boxer_if(variables, left, comparator, right, box)
-{
-    //deprecated
-    if(eval("\""+left +"\""+ comparator +"\""+ right +"\" ? true : false"))
-    {
-        interpretBox(variables, box);
-    }
 }
