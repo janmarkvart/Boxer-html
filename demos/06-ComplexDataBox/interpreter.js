@@ -9,11 +9,11 @@ var primitives = {
     "skip":  {function: skip, argcount: 1, needs_variables: false},
     "rotate":  {function: rotate, argcount: 1, needs_variables: false},
     "log": {function: log, argcount: 1, needs_variables: false},
-    "nested_code": {function: interpretBox, argcount: 2, needs_variables: true},
-    "change": {function: change, argcount: 2, needs_variables: false},
-    "repeat": {function: repeat, argcount: 3, needs_variables: true},
-    "for": {function: boxer_for, argcount: 4, needs_variables: true},
-    "if": {function: boxer_if, argcount: 4, needs_variables: true}
+    "nested_code": {function: interpretBox, argcount: 2, needs_variables: true},//TODO: rework this
+    "change": {function: change, argcount: 2, needs_variables: false}
+    //"repeat": {function: repeat, argcount: 3, needs_variables: true},
+    //"for": {function: boxer_for, argcount: 4, needs_variables: true},
+    //"if": {function: boxer_if, argcount: 4, needs_variables: true}
 };
 
 var boxcode_template = 
@@ -455,6 +455,8 @@ function evalBox(operations, variables = null)
         console.log(processed_op_idx);
         console.log("processing operation: ");
         console.log(op.operation);
+        console.log("with variables: ");
+        console.log(variables);
         if(op.operation == 'input')
         {
             op.operands.forEach(operand => {
@@ -476,10 +478,12 @@ function evalBox(operations, variables = null)
         }
         if(op.operation == 'clear')
         {
+            console.log("how many: " + op.operands);
             //clear the variables of latest input
             let variables_copy = variables;
             for(let i = 0; i < op.operands; i++)
             {
+                console.log("clearing variable: " + variables_copy.name);
                 variables_copy = variables_copy.next;
             }
             variables = variables_copy;
@@ -521,6 +525,58 @@ function evalBox(operations, variables = null)
             console.log("creating new variable or nested doit box");
             //create new variable (whether data or nested doit)
             variables = addNewVariable(variables, op.operands);
+            continue;
+        }
+
+        //operations that (potentially) call other boxes
+        if(op.operation == "repeat")
+        {
+            console.log(op.operands);
+            let times = Number(op.operands[2]);
+            let box = op.operands[3];
+            for(let i = 0; i < times; i++)
+            {
+                var new_operations = parseBox(box);
+                operations.splice(processed_op_idx, 0, ...new_operations);
+            }
+            continue;
+        }
+        if(op.operation == "for")
+        {
+            console.log(op.operands);
+            let iter = op.operands[0];
+            let check = op.operands[1];
+            let source = op.operands[2];
+            let box = op.operands[3];
+            if(check == "in")
+            {
+                for(let i = source.length -1 ; i >= 0; i--)
+                {
+                    let elem = source[i];
+                    if(elem.value !== undefined)
+                    {
+                        let new_var = [iter, elem.value];
+                        variables = addNewVariable(variables, new_var);
+                        var new_operations = parseBox(box);
+                        let combined = new_operations.concat([{operation: "clear", operands: [1]}]);
+                        operations.splice(processed_op_idx, 0, ...combined);
+                    }
+                };
+            }
+            continue;
+        }
+        if(op.operation == "if")
+        {
+            let left = op.operands[0];
+            let comparator = op.operands[1];
+            let right = op.operands[2];
+            let box = op.operands[3];
+            //TODO: try-catch
+            if(eval("\""+left +"\""+ comparator +"\""+ right +"\" ? true : false"))
+            {
+                var new_operations = parseBox(box);
+                operations.splice(processed_op_idx, 0, ...new_operations);
+            }
             continue;
         }
 
@@ -593,7 +649,6 @@ function evalBox(operations, variables = null)
 function createEmptyVariables(variables, op)
 {
     //creates empty variables (without a name), that will then be caught and "completed" by the input operation
-    //NOTE: this should work, double check then move on to for/if next
     let new_var = variables;
     for(let i = op.operands.length -1 ; i >= 0; i--)
     {
@@ -632,6 +687,8 @@ function processOperands(op, variables)
                 if(variables_copy.name === spl[spl_idx])
                 {
                     found = true;
+                    console.log("found variable: " + variables_copy.name);
+                    console.log(variables_copy);
                     let variables_nested = variables_copy;
                     spl_idx++;
                     //looking further into the found value (item.x etc.)
@@ -715,6 +772,7 @@ function createComplexVariable(addition)
 
 function tryFindBox(box_id)
 {
+    //deprecated
     return document.getElementById(box_id);
 }
 
@@ -741,6 +799,7 @@ function rotate(degrees)
 
 function repeat(variables, times, box)
 {
+    //deprecated
     for(let i = 0; i < times; i++)
     {
         interpretBox(variables, box);
@@ -760,6 +819,7 @@ function change(box_id, new_text)
 
 function boxer_for(variables, iter, check, source, box)
 {
+    //deprecated
     console.log(variables);
     console.log(iter);
     console.log(check);
@@ -777,6 +837,7 @@ function boxer_for(variables, iter, check, source, box)
 
 function boxer_if(variables, left, comparator, right, box)
 {
+    //deprecated
     if(eval("\""+left +"\""+ comparator +"\""+ right +"\" ? true : false"))
     {
         interpretBox(variables, box);
