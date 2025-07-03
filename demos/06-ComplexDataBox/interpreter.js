@@ -531,26 +531,10 @@ function evalBox(operations, variables = null)
             if(curr.name == op.operation)
             {
                 //found the box to call
+                found = true;
                 let box = curr.value;
                 //add new variables to pass to potential input in called box
-                let new_var = variables;
-                for(let i = op.operands.length -1 ; i >= 0; i--)
-                {
-                    let curr_operand = op.operands[i];
-                    let num = Number(curr_operand);
-                    if(num != NaN)
-                    {
-                        let tmp = new_var;
-                        new_var = {
-                            name: null,
-                            value: num,
-                            next: tmp
-                        };
-                    }
-                }
-                found = true;
-                //interpretBox(new_var, box);
-                variables = new_var;
+                variables = createEmptyVariables(variables, op);
                 var new_operations = parseBox(box);
                 console.log(new_operations);
                 //add newly created variables to list of "clear on exit" variables
@@ -581,26 +565,10 @@ function evalBox(operations, variables = null)
                     if(candidate.nodeType == Node.ELEMENT_NODE && candidate.id == op.operation)
                     {
                         //found the box to call
+                        found = true;
                         let box = candidate.getElementsByTagName('BOX-CODE')[0];
                         //add new variables to pass to potential input in called box
-                        let new_var = variables;
-                        for(let i = op.operands.length -1 ; i >= 0; i--)
-                        {
-                            let curr_operand = op.operands[i];
-                            let num = Number(curr_operand);
-                            if(num != NaN)
-                            {
-                                let tmp = new_var;
-                                new_var = {
-                                    name: null,
-                                    value: num,
-                                    next: tmp
-                                };
-                            }
-                        }
-                        found = true;
-                        //interpretBox(new_var, box);
-                        variables = new_var;
+                        variables = createEmptyVariables(variables, op);
                         var new_operations = parseBox(box);
                         console.log(new_operations);
                         //add newly created variables to list of "clear on exit" variables
@@ -620,6 +588,28 @@ function evalBox(operations, variables = null)
             console.log("no box found within scope => invalid operation");
         }
     }
+}
+
+function createEmptyVariables(variables, op)
+{
+    //creates empty variables (without a name), that will then be caught and "completed" by the input operation
+    //NOTE: this should work, double check then move on to for/if next
+    let new_var = variables;
+    for(let i = op.operands.length -1 ; i >= 0; i--)
+    {
+        let curr_operand = op.operands[i];
+        let num = Number(curr_operand);
+        if(num != NaN)
+        {
+            let tmp = new_var;
+            new_var = {
+                name: null,
+                value: num,
+                next: tmp
+            };
+        }
+    }
+    return new_var;
 }
 
 function processOperands(op, variables)
