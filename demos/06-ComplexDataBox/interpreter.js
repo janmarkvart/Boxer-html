@@ -9,7 +9,7 @@ var primitives = {
     "skip":  {function: skip, argcount: 1, needs_variables: false},
     "rotate":  {function: rotate, argcount: 1, needs_variables: false},
     "log": {function: log, argcount: 1, needs_variables: false},
-    "nested_code": {function: interpretBox, argcount: 2, needs_variables: true},//TODO: rework this
+    //"nested_code": {function: interpretBox, argcount: 2, needs_variables: true},//TODO: rework this
     "change": {function: change, argcount: 2, needs_variables: false}
     //"repeat": {function: repeat, argcount: 3, needs_variables: true},
     //"for": {function: boxer_for, argcount: 4, needs_variables: true},
@@ -525,6 +525,13 @@ function evalBox(operations, variables = null)
             console.log("creating new variable or nested doit box");
             //create new variable (whether data or nested doit)
             variables = addNewVariable(variables, op.operands);
+            continue;
+        }
+        if(op.operation == "nested_code")
+        {
+            let box = op.operands[0];
+            var new_operations = parseBox(box);
+            operations.splice(processed_op_idx, 0, ...new_operations);
             continue;
         }
 
