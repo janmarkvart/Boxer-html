@@ -305,7 +305,7 @@ function parseBox(caller_box)
         let child = box_code[i];
         if(child.nodeType == Node.TEXT_NODE)
         {
-            let trimmed = child.wholeText.trim();
+            let trimmed = child.data.trim();
             if(trimmed == "") {continue;}
             let words = trimmed.split(/\s+/);
             let idx = 0;
@@ -520,8 +520,8 @@ function evalBox(operations, variables = null)
         if(op.operation == "repeat")
         {
             console.log(op.operands);
-            let times = Number(op.operands[2]);
-            let box = op.operands[3];
+            let times = Number(op.operands[0]);
+            let box = op.operands[1];
             for(let i = 0; i < times; i++)
             {
                 var new_operations = parseBox(box);
