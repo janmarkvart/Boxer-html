@@ -491,6 +491,14 @@ function evalBox(operations, variables = null)
             }
         }
 
+        //variable creation/substitution into operands
+        if(op.operation == "new_var" || op.operation == "nested_doit")
+        {
+            console.log("creating new variable or nested doit box");
+            //create new variable (whether data or nested doit)
+            variables = addNewVariable(variables, op.operands);
+            continue;
+        }
         var call = primitives[op.operation];
         if(call != null)
         {
@@ -501,13 +509,7 @@ function evalBox(operations, variables = null)
             call.function.apply(call.function, op.operands);
             continue;
         }
-        if(op.operation == "new_var" || op.operation == "nested_doit")
-        {
-            console.log("creating new variable or nested doit box");
-            //create new variable (whether data or nested doit)
-            variables = addNewVariable(variables, op.operands);
-            continue;
-        }
+        
         if(op.operation == "nested_code")
         {
             let box = op.operands[0];
@@ -669,7 +671,7 @@ function processOperands(op, variables)
             let spl_idx = 0;
             //is variable to be translated
             let variables_copy = variables;
-            while(variables_copy != null)
+            while(variables_copy.next != null)
             {
                 //first level of lookup
                 if(variables_copy.name === spl[spl_idx])
@@ -695,14 +697,62 @@ function processOperands(op, variables)
                     }
                     else
                     {
-                        op.operands[i] ="err";
+                        op.operands[i] ="err";//TEMP: found parent variable doesnt have specified item
                     }
                     break;
                 }
                 variables_copy = variables_copy.next;
             }
-            //TODO: if variable not found, similarly to how called doit boxes are looked up,
+            if(found == true) {continue;}
+            //if variable not found, similarly to how called doit boxes are looked up,
             //look into higher scopes of the original caller box to see if the desired variable is defined there
+            console.log("variable not found in current scope, looking into higher scopes...");
+            var curr_scope = variables_copy.value.parentElement;
+            found = false;
+            while(curr_scope.parentElement != null) 
+            {
+                if(curr_scope.nodeName == "BOX-CODE" || curr_scope.nodeName == "BODY")
+                {
+                    var candidates = curr_scope.childNodes;
+                    candidates.forEach(candidate => 
+                    {
+                        //first level of lookup
+                        if(candidate.nodeType == Node.ELEMENT_NODE && candidate.id == spl[spl_idx])
+                        {
+                            found = true;
+                            console.log("found variable: " + candidate.id);
+                            console.log(candidate);
+                            let parsed = parseBox(candidate);
+                            console.log(parsed);
+                            let processed = addNewVariable(null, [candidate.id, parsed]);
+                            console.log(processed);
+
+                            spl_idx++;
+                            while(spl_idx < spl.length)
+                            {
+                                found = false;
+                                processed.value.forEach(item => {
+                                    if(item.name == spl[spl_idx]) {processed = item; found = true;}
+                                });
+                                spl_idx++;
+                            }
+                            if(found) 
+                            {
+                                op.operands[i] = processed.value;
+                            }
+                            else
+                            {
+                                op.operands[i] ="err";//TEMP: found parent variable doesnt have specified item
+                            }
+                            return;
+                        }
+                    });
+                    //end search when we found the (nearest) fitting box
+                    console.log("found box in higher scope, ending search...");
+                    if(found == true) {break;}
+                }
+                curr_scope = curr_scope.parentElement;
+            }
         }
     }
     return op.operands;
