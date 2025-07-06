@@ -434,7 +434,7 @@ function evalBox(operations, variables = null)
         processed_op_idx++;
         console.log(processed_op_idx);
         console.log("processing operation: ");
-        console.log(op.operation);
+        console.log(op);
         console.log("with variables: ");
         console.log(variables);
         if(op.operation == 'input')
@@ -574,22 +574,48 @@ function evalBox(operations, variables = null)
         }
 
         //call to another box (or invalid operation)
+        let spl = op.operation.split('.');
+        let spl_idx = 0;
         var found = false;
         var curr = variables;
         while(curr.next != null) {
-            if(curr.name == op.operation)
+            if(curr.name == spl[spl_idx])
             {
                 //found the box to call
                 found = true;
                 let box = curr.value;
-                //add new variables to pass to potential input in called box
-                variables = createEmptyVariables(variables, op);
-                var new_operations = parseBox(box);
-                console.log(new_operations);
-                //add newly created variables to list of "clear on exit" variables
-                new_operations[new_operations.length - 1].operands[0] += op.operands.length;
-                operations.splice(processed_op_idx, 0, ...new_operations);
-                break;
+
+                spl_idx++;
+                while(spl_idx < spl.length)
+                {
+                    found = false;
+                    if(curr.value.nodeType == Node.ELEMENT_NODE)
+                    {
+                        //is nested doitbox, thus cannot be further processed
+                        break;
+                    }
+                    curr.value.forEach(item => 
+                    {
+                        if(item.name == spl[spl_idx]) {box = item.value; found = true;}
+                    });
+                    spl_idx++;
+                }
+
+                if(found)
+                {
+                    console.log("found box: ");
+                    console.log(box);
+                    //add new variables to pass to potential input in called box
+                    console.log("adding new variables to pass to called box");
+                    console.log(op.operands);
+                    variables = createEmptyVariables(variables, op);
+                    var new_operations = parseBox(box);
+                    console.log(new_operations);
+                    //add newly created variables to list of "clear on exit" variables
+                    new_operations[new_operations.length - 1].operands[0] += op.operands.length;
+                    operations.splice(processed_op_idx, 0, ...new_operations);
+                    break;
+                }
             }
             curr = curr.next;
         }
@@ -646,16 +672,12 @@ function createEmptyVariables(variables, op)
     for(let i = op.operands.length -1 ; i >= 0; i--)
     {
         let curr_operand = op.operands[i];
-        let num = Number(curr_operand);
-        if(num != NaN)
-        {
-            let tmp = new_var;
-            new_var = {
-                name: null,
-                value: num,
-                next: tmp
-            };
-        }
+        let tmp = new_var;
+        new_var = {
+            name: null,
+            value: curr_operand,
+            next: tmp
+        };
     }
     return new_var;
 }
@@ -695,6 +717,11 @@ function processOperand(operand, variables)
                 while(spl_idx < spl.length)
                 {
                     found = false;
+                    if(variables_nested.value.nodeType == Node.ELEMENT_NODE)
+                    {
+                        //is nested doitbox, thus cannot be further processed
+                        break;
+                    }
                     variables_nested.value.forEach(item => 
                     {
                         if(item.name == spl[spl_idx]) {variables_nested = item; found = true;}
@@ -723,7 +750,7 @@ function processOperand(operand, variables)
                 candidates.forEach(candidate => 
                 {
                     //first level of lookup
-                    if(candidate.nodeType == Node.ELEMENT_NODE && candidate.id == spl[spl_idx])
+                    if(candidate.nodeName == "DATA-BOX" && candidate.id == spl[spl_idx])
                     {
                         found = true;
                         console.log("found variable: " + candidate.id);
@@ -737,6 +764,11 @@ function processOperand(operand, variables)
                         while(spl_idx < spl.length)
                         {
                             found = false;
+                            if(processed.value.nodeType == Node.ELEMENT_NODE)
+                            {
+                                //is nested doitbox, thus cannot be further processed
+                                break;
+                            }
                             processed.value.forEach(item => {
                                 if(item.name == spl[spl_idx]) {processed = item; found = true;}
                             });
