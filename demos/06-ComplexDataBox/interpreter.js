@@ -8,8 +8,7 @@ var primitives = {
     "forward": {function: forward, argcount: 1, needs_variables: false},
     "skip":  {function: skip, argcount: 1, needs_variables: false},
     "rotate":  {function: rotate, argcount: 1, needs_variables: false},
-    "log": {function: log, argcount: 1, needs_variables: false},
-    "change": {function: change, argcount: 2, needs_variables: false}
+    "log": {function: log, argcount: 1, needs_variables: false}
 };
 
 var boxcode_template = 
@@ -471,7 +470,7 @@ function evalBox(operations, variables = null)
             continue;
         }
         
-        //variable creation/substitution into operands
+        //variable creation
         if(op.operation == "new_var" || op.operation == "nested_doit")
         {
             console.log("creating new variable or nested doit box");
@@ -479,37 +478,7 @@ function evalBox(operations, variables = null)
             variables = addNewVariable(variables, op.operands);
             continue;
         }
-        //process operation operands (replace variable names with their values if applicable)
-        op.operands = processOperands(op, variables);
 
-        if(op.operation == 'change')
-        {
-            //special case for change operation:
-            //on top of its "primitive" functionality, also modify the existing variable
-            let variables_copy = variables;
-            while(variables_copy != null)
-            {
-                if(variables_copy.name == op.operands[0])
-                {
-                    //found the variable to change
-                    variables_copy.value = op.operands[1];
-                    break;
-                }
-                variables_copy = variables_copy.next;
-            }
-        }
-
-        var call = primitives[op.operation];
-        if(call != null)
-        {
-            if(call.needs_variables == true)
-            {
-                op.operands.unshift(variables);
-            }
-            call.function.apply(call.function, op.operands);
-            continue;
-        }
-        
         if(op.operation == "nested_code")
         {
             let box = op.operands[0];
@@ -517,11 +486,8 @@ function evalBox(operations, variables = null)
             operations.splice(processed_op_idx, 0, ...new_operations);
             continue;
         }
-
-        //operations that (potentially) call other boxes
         if(op.operation == "repeat")
         {
-            console.log(op.operands);
             let times = Number(op.operands[0]);
             let box = op.operands[1];
             for(let i = 0; i < times; i++)
@@ -531,12 +497,13 @@ function evalBox(operations, variables = null)
             }
             continue;
         }
+
+        //operations that do not require processing all operands
         if(op.operation == "for")
         {
-            console.log(op.operands);
             let iter = op.operands[0];
             let check = op.operands[1];
-            let source = op.operands[2];
+            let source = processOperand(op.operands[2], variables);
             let box = op.operands[3];
             if(check == "in")
             {
@@ -557,9 +524,9 @@ function evalBox(operations, variables = null)
         }
         if(op.operation == "if")
         {
-            let left = op.operands[0];
+            let left = processOperand(op.operands[0], variables);
             let comparator = op.operands[1];
-            let right = op.operands[2];
+            let right = processOperand(op.operands[2], variables);
             let box = op.operands[3];
             //TODO: try-catch
             if(eval("\""+left +"\""+ comparator +"\""+ right +"\" ? true : false"))
@@ -567,6 +534,42 @@ function evalBox(operations, variables = null)
                 var new_operations = parseBox(box);
                 operations.splice(processed_op_idx, 0, ...new_operations);
             }
+            continue;
+        }
+        if(op.operation == 'change')
+        {
+            if(op.operands.length < 2) {alert("Change operation requires at least 2 operands!"); continue;}
+            op.operands[1] = processOperand(op.operands[1], variables);
+            //special case for change operation:
+            //on top of its "primitive" functionality, also modify the existing variable
+            let variables_copy = variables;
+            while(variables_copy != null)
+            {
+                if(variables_copy.name == op.operands[0])
+                {
+                    //found the variable to change
+                    variables_copy.value = op.operands[1];
+                    //also change the box itself
+                    var target_box_code = document.getElementById(op.operands[0]).getElementsByTagName('BOX-CODE')[0];
+                    target_box_code.innerText = op.operands[1];
+                    break;
+                }
+                variables_copy = variables_copy.next;
+            }
+            continue;
+        }
+
+        //process all operation operands (replace variable names with their values if applicable)
+        op.operands = processOperands(op, variables);
+
+        var call = primitives[op.operation];
+        if(call != null)
+        {
+            if(call.needs_variables == true)
+            {
+                op.operands.unshift(variables);
+            }
+            call.function.apply(call.function, op.operands);
             continue;
         }
 
@@ -829,10 +832,4 @@ function rotate(degrees)
 function log(variable)
 {
     console.log("printing: " +variable);
-}
-
-function change(box_id, new_text)
-{
-    var target_box_code = document.getElementById(box_id).getElementsByTagName('BOX-CODE')[0];
-    target_box_code.innerText = new_text;
 }
