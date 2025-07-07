@@ -118,12 +118,13 @@ window.onload = function()
 
 function boxHeaderRun(e) 
 {
-    //find the box that was clicked on
+    //finds and calls the box that was clicked on
     let target = e.target;
     while(target.nodeName != 'DOIT-BOX')
     {
         target = target.parentElement;
     }
+    //add a "initial scope" variable for traversing into higher scopes during box lookup
     let initial_variable = 
     {
         name: "originalscope",
@@ -134,6 +135,7 @@ function boxHeaderRun(e)
 }
 function boxHeaderShowHide(e) 
 {
+    //handles minimizing box-code section of boxes
     let target = e.target;
     while(target.nodeName != 'DOIT-BOX' && target.nodeName != 'DATA-BOX')
     {
@@ -154,6 +156,7 @@ function boxHeaderShowHide(e)
 }
 function boxHeaderDelete(e)
 {
+    //handles box deletion
     let target = e.target;
     while(target.nodeName != 'DOIT-BOX' && target.nodeName != 'DATA-BOX')
     {
@@ -166,7 +169,7 @@ function boxHeaderDelete(e)
     // Event handling for contenteditable elements and template insertion
 //--------------------------------------------------------------------------------
 
-window.onclick += function(e) 
+window.onclick = function(e) 
 {
     let original_target = e.target;
     if(original_target.nodeName != 'BOX-CODE' && original_target.nodeName != 'BOX-NAME'){return;}
@@ -180,6 +183,7 @@ window.onclick += function(e)
     let previous_key = null;
     if(target.nodeName == 'DATA-BOX')
     {
+        //checks initial box name to see if box served as a user-defined template
         let separated_id = box_id.split('_');
         if(separated_id.length === 3 &&  separated_id[0] === "key" && separated_id[1].length === 1 
             && separated_id[2] === "template" && target.nodeName == 'DATA-BOX')
@@ -189,8 +193,8 @@ window.onclick += function(e)
             previous_key = separated_id[1];
         }
     }
-    console.log("target box: " + target.id);
-    document.activeElement.addEventListener("blur", function onleave(ee)
+
+    document.activeElement.addEventListener("blur", function onleave()
     {
         document.activeElement.spellcheck = false;
         //check if box is template
@@ -204,21 +208,20 @@ window.onclick += function(e)
         {
             //box-name serves as box id
             target.id = original_target.innerText;
+
             if(is_user_template == true)
             {
-                //template created/updated
                 if(previous_key != null && current_key != previous_key)
                 {
-                    console.log("removing template "+previous_key+"...");
+                    //key changed, remove old template
                     delete boxer_templates[previous_key];
                 }
-                console.log("creating template "+current_key+"...");
+                //create new user-defined template
                 boxer_templates[current_key] = {tag_name: 'user_'+current_key, template: target.getElementsByTagName('BOX-CODE')[0].innerHTML};
             }
             else if(was_user_template == true)
             {
                 //box no longer serves as a template
-                console.log("removing template "+previous_key+"...");
                 delete boxer_templates[previous_key];
             }
         }
@@ -226,15 +229,14 @@ window.onclick += function(e)
         {
             if(was_user_template == true)
             {
-                //box is a template
-                console.log("updating code of template "+previous_key+"...");
+                //box is a template, update its contents
                 boxer_templates[previous_key] = {tag_name: 'user_'+current_key, template: original_target.innerHTML};
             }
         }
     },{ once: true });//only triggers once, so no need to remove the listener manually
     if(original_target.nodeName == 'BOX-CODE')
     {
-        document.activeElement.onkeyup = function(e)
+        document.activeElement.onkeyup = function()
         {
             //detect whether user pressed a key which corresponds to a box template
             for(let key in boxer_templates)
@@ -250,14 +252,13 @@ window.onclick += function(e)
 
 function insertBox(original_target, key)
 {
-    console.log(original_target);
     //inserts a new box into the program, based on the key pressed
     let box_template = boxer_templates[key];
     templateInserter(original_target, key, box_template.template);
     
     if(key == "[" || key == "]" || key == "{")
     {
-        //one of default templates
+        //one of default templates, place focus into newly added box's box-code for ease of use
         let box_list = original_target.getElementsByTagName(box_template.tag_name);
         let new_box = box_list[box_list.length -1];
         if(box_template.tag_name != "box-code")
@@ -299,16 +300,15 @@ function templateInserter(current_target, key, template)
 
 function interpretBox(variables, caller_box)
 {
-    console.log("interpreting new box");
-    console.log(caller_box);
+    //interpretation of the original caller box
     let operations = parseBox(caller_box);
-    console.log("list of operations to eval");
-    console.log(operations);
     evalBox(operations, variables);
 }
 
 function parseBox(caller_box) 
 {
+    //translates the provided box element into individual operations & their operands to be evaluated,
+    // separated into variables, nested code, and operations
     let operations = [];
     let variables = [];
     let nested_doits = [];
@@ -350,6 +350,7 @@ function parseBox(caller_box)
         {
             if(child.nodeName == "BR" && current_operation.operation != null)
             {
+                //<BR> works as a universal separator between operations
                 operations.push(current_operation);
                 current_operation = {
                     operation: null,
@@ -452,18 +453,13 @@ function parseBox(caller_box)
 function evalBox(operations, variables = null)
 {
     let processed_op_idx = 0;
-    console.log(operations);
     while(processed_op_idx < operations.length)
     {
         let op = operations[processed_op_idx];
         processed_op_idx++;
-        console.log(processed_op_idx);
-        console.log("processing operation: ");
-        console.log(op);
-        console.log("with variables: ");
-        console.log(variables);
         if(op.operation == 'input')
         {
+            //catches previously passed variable values into names provided by input operands
             op.operands.forEach(operand => {
                 let found = false;
                 let variables_iter = variables;
@@ -483,12 +479,10 @@ function evalBox(operations, variables = null)
         }
         if(op.operation == 'clear')
         {
-            console.log("how many: " + op.operands);
-            //clear the variables of latest input
+            //clear variables at the end of their lifetime (current scope)
             let variables_copy = variables;
             for(let i = 0; i < op.operands[0]; i++)
             {
-                console.log("clearing variable: " + variables_copy.name);
                 variables_copy = variables_copy.next;
             }
             variables = variables_copy;
@@ -498,14 +492,14 @@ function evalBox(operations, variables = null)
         //variable creation
         if(op.operation == "new_var" || op.operation == "nested_doit")
         {
-            console.log("creating new variable or nested doit box");
-            //create new variable (whether data or nested doit)
+            //create new variable
             variables = addNewVariable(variables, op.operands);
             continue;
         }
 
         if(op.operation == "nested_code")
         {
+            //add nested code into evaluation as a inner scope
             let box = op.operands[0];
             let new_operations = parseBox(box);
             operations.splice(processed_op_idx, 0, ...new_operations);
@@ -515,6 +509,7 @@ function evalBox(operations, variables = null)
         {
             if(op.operands.length < 2) { alert("Repeat operation requires 2 operands, "+op.operands.length+" provided!"); continue; }
             let times = Number(op.operands[0]);
+            if(isNaN(times)) { alert("Repeat: first operand has to be a number!"); continue; }
             let box = op.operands[1];
             for(let i = 0; i < times; i++)
             {
@@ -638,14 +633,9 @@ function evalBox(operations, variables = null)
 
                 if(found)
                 {
-                    console.log("found box: ");
-                    console.log(box);
                     //add new variables to pass to potential input in called box
-                    console.log("adding new variables to pass to called box");
-                    console.log(op.operands);
                     variables = createEmptyVariables(variables, op);
                     let new_operations = parseBox(box);
-                    console.log(new_operations);
                     //add newly created variables to list of "clear on exit" variables
                     new_operations[new_operations.length - 1].operands[0] += op.operands.length;
                     operations.splice(processed_op_idx, 0, ...new_operations);
@@ -661,10 +651,8 @@ function evalBox(operations, variables = null)
 
         //box hasn't been found in existing variables, check higher scopes of original caller box
         //since the original caller is saved as the last variable, we can start checking:
-        console.log("searching for box in higher scopes");
         spl_idx = 0;
         let curr_scope = curr.value.parentElement;
-        console.log(curr.value.parentElement.parentElement);
         while(curr_scope.parentElement != null) 
         {
             if(curr_scope.nodeName == "BOX-CODE" || curr_scope.nodeName == "BODY")
@@ -676,11 +664,8 @@ function evalBox(operations, variables = null)
                     {
                         //found the box to call
                         found = true;
-                        console.log(candidate);
                         let parsed = parseBox(candidate);
-                        console.log(parsed);
                         let processed = addNewVariable(null, [candidate.id, parsed]);
-                        console.log(processed);
 
                         spl_idx++;
                         while(spl_idx < spl.length)
@@ -700,14 +685,9 @@ function evalBox(operations, variables = null)
 
                         if(found)
                         {
-                            console.log("found box: ");
-                            console.log(processed);
                             //add new variables to pass to potential input in called box
-                            console.log("adding new variables to pass to called box");
-                            console.log(op.operands);
                             variables = createEmptyVariables(variables, op);
                             let new_operations = parseBox(processed);
-                            console.log(new_operations);
                             //add newly created variables to list of "clear on exit" variables
                             new_operations[new_operations.length - 1].operands[0] += op.operands.length;
                             operations.splice(processed_op_idx, 0, ...new_operations);
@@ -717,13 +697,13 @@ function evalBox(operations, variables = null)
                     spl_idx = 0;
                 });
                 //end search when we found the (nearest) fitting box
-                if(found == true) {console.log("found box in higher scope, ending search..."); break;}
+                if(found == true) { break; }
             }
             curr_scope = curr_scope.parentElement;
         }
         if(found == false)
         {
-            console.log("no box found within scope => invalid operation");
+            console.debug(op.operation+": no box found within scope => invalid operation/comment");
         }
     }
 }
@@ -765,7 +745,6 @@ function processOperand(operand, variables)
     if(typeof operand === 'string')
     {
         let found = false;
-        //console.log("replacing variable "+operands[i]+" with its value");
         let spl = operand.split('.');
         let spl_idx = 0;
         //is variable to be translated
@@ -776,8 +755,6 @@ function processOperand(operand, variables)
             if(variables_copy.name === spl[spl_idx])
             {
                 found = true;
-                console.log("found variable: " + variables_copy.name);
-                console.log(variables_copy);
                 let variables_nested = variables_copy;
                 spl_idx++;
                 //looking further into the found value (item.x etc.)
@@ -805,9 +782,9 @@ function processOperand(operand, variables)
             variables_copy = variables_copy.next;
         }
         if(found == true) {return operand;}
+
         //if variable not found, similarly to how called doit boxes are looked up,
         //look into higher scopes of the original caller box to see if the desired variable is defined there
-        console.log("variable not found in current scope, looking into higher scopes...");
         let curr_scope = variables_copy.value.parentElement;
         found = false;
         while(curr_scope.parentElement != null) 
@@ -821,12 +798,8 @@ function processOperand(operand, variables)
                     if(candidate.nodeName == "DATA-BOX" && candidate.id == spl[spl_idx])
                     {
                         found = true;
-                        console.log("found variable: " + candidate.id);
-                        console.log(candidate);
                         let parsed = parseBox(candidate);
-                        console.log(parsed);
                         let processed = addNewVariable(null, [candidate.id, parsed]);
-                        console.log(processed);
 
                         spl_idx++;
                         while(spl_idx < spl.length)
@@ -845,7 +818,6 @@ function processOperand(operand, variables)
                         if(found) 
                         {
                             //end search when we found the (nearest) fitting box
-                            console.log("found box in higher scope, ending search...");
                             operand = processed.value;
                             return operand;
                         }
