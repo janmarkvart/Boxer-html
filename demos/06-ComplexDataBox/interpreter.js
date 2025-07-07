@@ -498,7 +498,7 @@ function evalBox(operations, variables = null)
             continue;
         }
 
-        //operations that do not require processing all operands
+        //operations that require processing only specific operands
         if(op.operation == "for")
         {
             let iter = op.operands[0];
@@ -617,30 +617,68 @@ function evalBox(operations, variables = null)
                     break;
                 }
             }
+            spl_idx = 0;
             curr = curr.next;
         }
         if(found == true) {continue;}
+        
         //NOTE: above part is called dynamic scoping
 
         //box hasn't been found in existing variables, check higher scopes of original caller box
         //since the original caller is saved as the last variable, we can start checking:
         console.log("searching for box in higher scopes");
+        spl_idx = 0;
         var curr_scope = curr.value.parentElement;
         console.log(curr.value.parentElement.parentElement);
         while(curr_scope.parentElement != null) 
         {
-            //TODO: perhaps introducing a top-level "WORLD" box/es would be better than using body
-            //(also more in line with the original boxer/sunrise) 
             if(curr_scope.nodeName == "BOX-CODE" || curr_scope.nodeName == "BODY")
             {
                 var candidates = curr_scope.childNodes;
                 candidates.forEach(candidate => 
                 {
-                    //console.log(candidate);
-                    if(candidate.nodeType == Node.ELEMENT_NODE && candidate.id == op.operation)
+                    if(candidate.nodeName == "DATA-BOX" && candidate.id == spl[spl_idx])
                     {
                         //found the box to call
                         found = true;
+                        console.log(candidate);
+                        let parsed = parseBox(candidate);
+                        console.log(parsed);
+                        let processed = addNewVariable(null, [candidate.id, parsed]);
+                        console.log(processed);
+
+                        spl_idx++;
+                        while(spl_idx < spl.length)
+                        {
+                            found = false;
+                            if(processed.value.nodeType == Node.ELEMENT_NODE)
+                            {
+                                //is nested doitbox, thus cannot be further processed
+                                break;
+                            }
+                            processed.value.forEach(item => 
+                            {
+                                if(item.name == spl[spl_idx]) {processed = item.value; found = true;}
+                            });
+                            spl_idx++;
+                        }
+
+                        if(found)
+                        {
+                            console.log("found box: ");
+                            console.log(processed);
+                            //add new variables to pass to potential input in called box
+                            console.log("adding new variables to pass to called box");
+                            console.log(op.operands);
+                            variables = createEmptyVariables(variables, op);
+                            var new_operations = parseBox(processed);
+                            console.log(new_operations);
+                            //add newly created variables to list of "clear on exit" variables
+                            new_operations[new_operations.length - 1].operands[0] += op.operands.length;
+                            operations.splice(processed_op_idx, 0, ...new_operations);
+                            return;
+                        }
+                        /*
                         let box = candidate.getElementsByTagName('BOX-CODE')[0];
                         //add new variables to pass to potential input in called box
                         variables = createEmptyVariables(variables, op);
@@ -649,12 +687,12 @@ function evalBox(operations, variables = null)
                         //add newly created variables to list of "clear on exit" variables
                         new_operations[new_operations.length - 1].operands[0] += op.operands.length;
                         operations.splice(processed_op_idx, 0, ...new_operations);
-                        return;
+                        return;*/
                     }
+                    spl_idx = 0;
                 });
                 //end search when we found the (nearest) fitting box
-                console.log("found box in higher scope, ending search...");
-                if(found == true) {break;}
+                if(found == true) {console.log("found box in higher scope, ending search..."); break;}
             }
             curr_scope = curr_scope.parentElement;
         }
@@ -734,6 +772,7 @@ function processOperand(operand, variables)
                     return operand;
                 }
             }
+            spl_idx = 0;
             variables_copy = variables_copy.next;
         }
         if(found == true) {return operand;}
@@ -782,6 +821,7 @@ function processOperand(operand, variables)
                             return operand;
                         }
                     }
+                    spl_idx = 0;
                 });
             }
             curr_scope = curr_scope.parentElement;

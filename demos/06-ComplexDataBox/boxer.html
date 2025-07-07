@@ -7,7 +7,7 @@
 </head>
 
 <body>
-    <doit-box id="outerlist">
+    <data-box id="outerlist">
         <div class="box-header">
             <box-name contenteditable=true>outerlist</box-name>
             <div class="header-right">
@@ -47,8 +47,24 @@
                 <box-code>goodbye</box-code>
             </data-box>
             <br>
+            <doit-box id="func1">
+                <div class="box-header">
+                    <box-name contenteditable=true>func1</box-name>
+                    <div class="header-right">
+                        <button class="boxcode-hide">hide</button>
+                        <button class="doit-execute">run</button>
+                        <button class="deletebox">delete</button>
+                    </div>
+                </div>
+                <box-code>
+                    input Name
+                    <br>
+                    log Name
+                </box-code>
+            </doit-box>
+            <br>
         </box-code>
-    </doit-box>
+    </data-box>
     <doit-box id="list-iterate">
         <div class="box-header">
             <box-name contenteditable=true>list-iterate</box-name>
