@@ -1,8 +1,28 @@
-var canvas_pointer;
+//--------------------------------------------------------------------------------
+    // Initial Setup and canvas preparation
+//--------------------------------------------------------------------------------
+
+var canvas_pointer = null;
 var canvas_context;
-var canvas_x;
-var canvas_y;
-var canvas_rotation = 45;
+var turtle_position = {x: 20, y: 20, rotation: 45};
+
+function canvas_draw(draw_line)
+{
+    if(canvas_pointer == null)
+    {
+        alert("Cannot proceed with drawing operation, no canvas present!");
+        return;
+    }
+    if(draw_line)
+    {
+        canvas_context.lineTo(turtle_position.x, turtle_position.y);
+    }
+    else
+    {
+        canvas_context.moveTo(turtle_position.x, turtle_position.y);
+    }
+    canvas_context.stroke();
+}
 
 var primitives = {
     "forward": {function: forward, argcount: 1, needs_variables: false},
@@ -60,18 +80,104 @@ var boxer_templates = {
     "{": {tag_name : "data-box", template: databox_template}
 }
 
-window.onclick = function(e) 
+window.onload = function() 
 {
-    var original_target = e.target;
-    if(original_target.nodeName != 'BOX-CODE' && original_target.nodeName != 'BOX-NAME'){return;}
-    var target = original_target;
+    //prepare canvas to be callable by boxer functions
+    canvas_pointer = document.getElementById('main-canvas');
+    if(canvas_pointer != null)
+    {
+        canvas_context = canvas_pointer.getContext("2d");
+        canvas_context.beginPath();
+        canvas_context.moveTo(turtle_position.x,turtle_position.y);
+    }
+    //add execute functionality to doit-boxes
+    let doit_runners = document.getElementsByClassName("doit-execute");
+    for (let i = 0; i < doit_runners.length; i++) {
+        let element = doit_runners[i];
+        element.onclick = function(e) {
+            boxHeaderRun(e);
+        }
+    }
+    //add show/hide box-code functionality to boxes
+    let box_hiders = document.getElementsByClassName("boxcode-hide");
+    for (let i = 0; i < box_hiders.length; i++) {
+        let element = box_hiders[i];
+        element.onclick = function(e) {
+            boxHeaderShowHide(e);
+        }
+    }
+    //add ability to delete box
+    let box_deletes = document.getElementsByClassName("deletebox");
+    for (let i = 0; i < box_deletes.length; i++) {
+        let element = box_deletes[i];
+        element.onclick = function(e) {
+            boxHeaderDelete(e);
+        }
+    }
+}
+
+function boxHeaderRun(e) 
+{
+    //find the box that was clicked on
+    let target = e.target;
+    while(target.nodeName != 'DOIT-BOX')
+    {
+        target = target.parentElement;
+    }
+    let initial_variable = 
+    {
+        name: "originalscope",
+        value: target,
+        next: null
+    }
+    interpretBox(initial_variable, target);
+}
+function boxHeaderShowHide(e) 
+{
+    let target = e.target;
     while(target.nodeName != 'DOIT-BOX' && target.nodeName != 'DATA-BOX')
     {
         target = target.parentElement;
     }
-    var box_id = target.id;
-    var was_user_template = false;
-    var previous_key = null;
+    target_hide_button = target.getElementsByClassName("boxcode-hide")[0];
+    target = target.getElementsByTagName('BOX-CODE')[0];
+    if (target.style.display === "none") 
+    {
+        target.style.display = "inline-block";
+        target_hide_button.innerText = "hide";
+    } 
+    else 
+    {
+        target.style.display = "none";
+        target_hide_button.innerText = "show";
+    }
+}
+function boxHeaderDelete(e)
+{
+    let target = e.target;
+    while(target.nodeName != 'DOIT-BOX' && target.nodeName != 'DATA-BOX')
+    {
+        target = target.parentElement;
+    }
+    if( confirm("Are you sure you want to delete this box?") == true) { target.remove(); }
+}
+
+//--------------------------------------------------------------------------------
+    // Event handling for contenteditable elements and template insertion
+//--------------------------------------------------------------------------------
+
+window.onclick += function(e) 
+{
+    let original_target = e.target;
+    if(original_target.nodeName != 'BOX-CODE' && original_target.nodeName != 'BOX-NAME'){return;}
+    let target = original_target;
+    while(target.nodeName != 'DOIT-BOX' && target.nodeName != 'DATA-BOX')
+    {
+        target = target.parentElement;
+    }
+    let box_id = target.id;
+    let was_user_template = false;
+    let previous_key = null;
     if(target.nodeName == 'DATA-BOX')
     {
         let separated_id = box_id.split('_');
@@ -131,7 +237,7 @@ window.onclick = function(e)
         document.activeElement.onkeyup = function(e)
         {
             //detect whether user pressed a key which corresponds to a box template
-            for(var key in boxer_templates)
+            for(let key in boxer_templates)
             {
                 if(original_target.innerHTML.indexOf(key) >= 0)
                 {
@@ -146,20 +252,20 @@ function insertBox(original_target, key)
 {
     console.log(original_target);
     //inserts a new box into the program, based on the key pressed
-    var box_template = boxer_templates[key];
+    let box_template = boxer_templates[key];
     templateInserter(original_target, key, box_template.template);
     
     if(key == "[" || key == "]" || key == "{")
     {
         //one of default templates
-        var box_list = original_target.getElementsByTagName(box_template.tag_name);
-        var new_box = box_list[box_list.length -1];
+        let box_list = original_target.getElementsByTagName(box_template.tag_name);
+        let new_box = box_list[box_list.length -1];
         if(box_template.tag_name != "box-code")
         {
             new_box = new_box.getElementsByTagName('box-code')[0];
         }
-        var s = window.getSelection();
-        var r = document.createRange();
+        let s = window.getSelection();
+        let r = document.createRange();
         r.setStart(new_box, 0);
         r.setEnd(new_box, 1);
         s.removeAllRanges();
@@ -187,95 +293,15 @@ function templateInserter(current_target, key, template)
     });
 }
 
-window.onload = function() 
-{
-    //prepare canvas to be callable by boxer functions
-    var canvas_pointer = document.getElementById('main-canvas');
-    if(canvas_pointer != null)
-    {
-        canvas_context = canvas_pointer.getContext("2d");
-        canvas_context.beginPath();
-        canvas_context.moveTo(20,20);
-        canvas_x = 20;
-        canvas_y = 20;
-    }
-    //add execute functionality to doit-boxes
-    var doit_runners = document.getElementsByClassName("doit-execute");
-    for (let i = 0; i < doit_runners.length; i++) {
-        var element = doit_runners[i];
-        element.onclick = function(e) {
-            boxHeaderRun(e);
-        }
-    }
-    //add show/hide box-code functionality to boxes
-    var doit_runners = document.getElementsByClassName("boxcode-hide");
-    for (let i = 0; i < doit_runners.length; i++) {
-        var element = doit_runners[i];
-        element.onclick = function(e) {
-            boxHeaderShowHide(e);
-        }
-    }
-    //add ability to delete box
-    var doit_runners = document.getElementsByClassName("deletebox");
-    for (let i = 0; i < doit_runners.length; i++) {
-        var element = doit_runners[i];
-        element.onclick = function(e) {
-            boxHeaderDelete(e);
-        }
-    }
-}
-
-function boxHeaderRun(e) 
-{
-    //find the box that was clicked on
-    var target = e.target;
-    while(target.nodeName != 'DOIT-BOX')
-    {
-        target = target.parentElement;
-    }
-    var initial_variable = 
-    {
-        name: "originalscope",
-        value: target,
-        next: null
-    }
-    interpretBox(initial_variable, target);
-}
-function boxHeaderShowHide(e) 
-{
-    var target = e.target;
-    while(target.nodeName != 'DOIT-BOX' && target.nodeName != 'DATA-BOX')
-    {
-        target = target.parentElement;
-    }
-    target_hide_button = target.getElementsByClassName("boxcode-hide")[0];
-    target = target.getElementsByTagName('BOX-CODE')[0];
-    if (target.style.display === "none") 
-    {
-        target.style.display = "inline-block";
-        target_hide_button.innerText = "hide";
-    } 
-    else 
-    {
-        target.style.display = "none";
-        target_hide_button.innerText = "show";
-    }
-}
-function boxHeaderDelete(e)
-{
-    var target = e.target;
-    while(target.nodeName != 'DOIT-BOX' && target.nodeName != 'DATA-BOX')
-    {
-        target = target.parentElement;
-    }
-    if( confirm("Are you sure you want to delete this box?") == true) { target.remove(); }
-}
+//--------------------------------------------------------------------------------
+    // Process the html syntax into operations to be evaluated
+//--------------------------------------------------------------------------------
 
 function interpretBox(variables, caller_box)
 {
     console.log("interpreting new box");
     console.log(caller_box);
-    var operations = parseBox(caller_box);
+    let operations = parseBox(caller_box);
     console.log("list of operations to eval");
     console.log(operations);
     evalBox(operations, variables);
@@ -283,17 +309,17 @@ function interpretBox(variables, caller_box)
 
 function parseBox(caller_box) 
 {
-    var operations = [];
-    var variables = [];
-    var nested_doits = [];
-    var current_operation = {
+    let operations = [];
+    let variables = [];
+    let nested_doits = [];
+    let current_operation = {
         operation: null,
         operands: []
     };
-    var box_code;
+    let box_code;
     if(caller_box.nodeName == "DOIT-BOX" || caller_box.nodeName == "DATA-BOX")
     {
-        box_code = grabBoxCode(caller_box);
+        box_code = caller_box.getElementsByTagName('BOX-CODE')[0].childNodes;
     }
     else
     {
@@ -306,7 +332,7 @@ function parseBox(caller_box)
         {
             let trimmed = child.data.trim();
             if(trimmed == "") {continue;}
-            let words = trimmed.split(/\s+/);
+            let words = trimmed.split(/\s+/);//split by whitespace
             let idx = 0;
             if(current_operation.operation == null)
             {
@@ -419,14 +445,13 @@ function parseBox(caller_box)
     return all_operations;
 }
 
-function grabBoxCode(box)
-{
-    return box.querySelector('box-code').childNodes;
-}
+//--------------------------------------------------------------------------------
+    // Main evaluation function
+//--------------------------------------------------------------------------------
 
 function evalBox(operations, variables = null)
 {
-    var processed_op_idx = 0;
+    let processed_op_idx = 0;
     console.log(operations);
     while(processed_op_idx < operations.length)
     {
@@ -461,7 +486,7 @@ function evalBox(operations, variables = null)
             console.log("how many: " + op.operands);
             //clear the variables of latest input
             let variables_copy = variables;
-            for(let i = 0; i < op.operands; i++)
+            for(let i = 0; i < op.operands[0]; i++)
             {
                 console.log("clearing variable: " + variables_copy.name);
                 variables_copy = variables_copy.next;
@@ -482,17 +507,18 @@ function evalBox(operations, variables = null)
         if(op.operation == "nested_code")
         {
             let box = op.operands[0];
-            var new_operations = parseBox(box);
+            let new_operations = parseBox(box);
             operations.splice(processed_op_idx, 0, ...new_operations);
             continue;
         }
         if(op.operation == "repeat")
         {
+            if(op.operands.length < 2) { alert("Repeat operation requires 2 operands, "+op.operands.length+" provided!"); continue; }
             let times = Number(op.operands[0]);
             let box = op.operands[1];
             for(let i = 0; i < times; i++)
             {
-                var new_operations = parseBox(box);
+                let new_operations = parseBox(box);
                 operations.splice(processed_op_idx, 0, ...new_operations);
             }
             continue;
@@ -501,6 +527,7 @@ function evalBox(operations, variables = null)
         //operations that require processing only specific operands
         if(op.operation == "for")
         {
+            if(op.operands.length < 4) { alert("For operation requires 4 operands, "+op.operands.length+" provided!"); continue; }
             let iter = op.operands[0];
             let check = op.operands[1];
             let source = processOperand(op.operands[2], variables);
@@ -514,7 +541,7 @@ function evalBox(operations, variables = null)
                     {
                         let new_var = [iter, elem.value];
                         variables = addNewVariable(variables, new_var);
-                        var new_operations = parseBox(box);
+                        let new_operations = parseBox(box);
                         let combined = new_operations.concat([{operation: "clear", operands: [1]}]);
                         operations.splice(processed_op_idx, 0, ...combined);
                     }
@@ -524,21 +551,29 @@ function evalBox(operations, variables = null)
         }
         if(op.operation == "if")
         {
+            if(op.operands.length < 4) { alert("If operation requires 4 operands, "+op.operands.length+" provided!"); continue; }
             let left = processOperand(op.operands[0], variables);
             let comparator = op.operands[1];
             let right = processOperand(op.operands[2], variables);
             let box = op.operands[3];
-            //TODO: try-catch
-            if(eval("\""+left +"\""+ comparator +"\""+ right +"\" ? true : false"))
+            try
             {
-                var new_operations = parseBox(box);
-                operations.splice(processed_op_idx, 0, ...new_operations);
+                if(eval("\""+left +"\""+ comparator +"\""+ right +"\" ? true : false"))
+                {
+                    let new_operations = parseBox(box);
+                    operations.splice(processed_op_idx, 0, ...new_operations);
+                }
             }
+            catch(e)
+            {
+                if(e instanceof SyntaxError) { alert("if: provided condition contains syntax errors!");}
+            }
+            
             continue;
         }
         if(op.operation == 'change')
         {
-            if(op.operands.length < 2) {alert("Change operation requires at least 2 operands!"); continue;}
+            if(op.operands.length < 2) { alert("Change operation requires 2 operands, "+op.operands.length+" provided!"); continue; }
             op.operands[1] = processOperand(op.operands[1], variables);
             //special case for change operation:
             //on top of its "primitive" functionality, also modify the existing variable
@@ -550,7 +585,7 @@ function evalBox(operations, variables = null)
                     //found the variable to change
                     variables_copy.value = op.operands[1];
                     //also change the box itself
-                    var target_box_code = document.getElementById(op.operands[0]).getElementsByTagName('BOX-CODE')[0];
+                    let target_box_code = document.getElementById(op.operands[0]).getElementsByTagName('BOX-CODE')[0];
                     target_box_code.innerText = op.operands[1];
                     break;
                 }
@@ -562,7 +597,7 @@ function evalBox(operations, variables = null)
         //process all operation operands (replace variable names with their values if applicable)
         op.operands = processOperands(op, variables);
 
-        var call = primitives[op.operation];
+        let call = primitives[op.operation];
         if(call != null)
         {
             if(call.needs_variables == true)
@@ -576,8 +611,8 @@ function evalBox(operations, variables = null)
         //call to another box (or invalid operation)
         let spl = op.operation.split('.');
         let spl_idx = 0;
-        var found = false;
-        var curr = variables;
+        let found = false;
+        let curr = variables;
         while(curr.next != null) {
             if(curr.name == spl[spl_idx])
             {
@@ -609,7 +644,7 @@ function evalBox(operations, variables = null)
                     console.log("adding new variables to pass to called box");
                     console.log(op.operands);
                     variables = createEmptyVariables(variables, op);
-                    var new_operations = parseBox(box);
+                    let new_operations = parseBox(box);
                     console.log(new_operations);
                     //add newly created variables to list of "clear on exit" variables
                     new_operations[new_operations.length - 1].operands[0] += op.operands.length;
@@ -628,13 +663,13 @@ function evalBox(operations, variables = null)
         //since the original caller is saved as the last variable, we can start checking:
         console.log("searching for box in higher scopes");
         spl_idx = 0;
-        var curr_scope = curr.value.parentElement;
+        let curr_scope = curr.value.parentElement;
         console.log(curr.value.parentElement.parentElement);
         while(curr_scope.parentElement != null) 
         {
             if(curr_scope.nodeName == "BOX-CODE" || curr_scope.nodeName == "BODY")
             {
-                var candidates = curr_scope.childNodes;
+                let candidates = curr_scope.childNodes;
                 candidates.forEach(candidate => 
                 {
                     if(candidate.nodeName == "DATA-BOX" && candidate.id == spl[spl_idx])
@@ -671,23 +706,13 @@ function evalBox(operations, variables = null)
                             console.log("adding new variables to pass to called box");
                             console.log(op.operands);
                             variables = createEmptyVariables(variables, op);
-                            var new_operations = parseBox(processed);
+                            let new_operations = parseBox(processed);
                             console.log(new_operations);
                             //add newly created variables to list of "clear on exit" variables
                             new_operations[new_operations.length - 1].operands[0] += op.operands.length;
                             operations.splice(processed_op_idx, 0, ...new_operations);
                             return;
                         }
-                        /*
-                        let box = candidate.getElementsByTagName('BOX-CODE')[0];
-                        //add new variables to pass to potential input in called box
-                        variables = createEmptyVariables(variables, op);
-                        var new_operations = parseBox(box);
-                        console.log(new_operations);
-                        //add newly created variables to list of "clear on exit" variables
-                        new_operations[new_operations.length - 1].operands[0] += op.operands.length;
-                        operations.splice(processed_op_idx, 0, ...new_operations);
-                        return;*/
                     }
                     spl_idx = 0;
                 });
@@ -719,6 +744,10 @@ function createEmptyVariables(variables, op)
     }
     return new_var;
 }
+
+//--------------------------------------------------------------------------------
+    // Processing operand/s of operations using variables
+//--------------------------------------------------------------------------------
 
 function processOperands(op, variables)
 {
@@ -779,13 +808,13 @@ function processOperand(operand, variables)
         //if variable not found, similarly to how called doit boxes are looked up,
         //look into higher scopes of the original caller box to see if the desired variable is defined there
         console.log("variable not found in current scope, looking into higher scopes...");
-        var curr_scope = variables_copy.value.parentElement;
+        let curr_scope = variables_copy.value.parentElement;
         found = false;
         while(curr_scope.parentElement != null) 
         {
             if(curr_scope.nodeName == "BOX-CODE" || curr_scope.nodeName == "BODY")
             {
-                var candidates = curr_scope.childNodes;
+                let candidates = curr_scope.childNodes;
                 candidates.forEach(candidate => 
                 {
                     //first level of lookup
@@ -829,6 +858,10 @@ function processOperand(operand, variables)
     }
     return operand;
 }
+
+//--------------------------------------------------------------------------------
+    // Evaluating new variables to be added to the list of variables
+//--------------------------------------------------------------------------------
 
 function addNewVariable(variables, addition)
 {
@@ -880,25 +913,33 @@ function createComplexVariable(addition)
     return variable;
 }
 
+//--------------------------------------------------------------------------------
+    // Primitive operations
+//--------------------------------------------------------------------------------
+
 function forward(distance)
 {
-    canvas_x = canvas_x + Math.sin(canvas_rotation/180*Math.PI)*distance;
-    canvas_y = canvas_y + Math.cos(canvas_rotation/180*Math.PI)*distance;
-    canvas_context.lineTo(canvas_x,canvas_y);
-    canvas_context.stroke();
+    let dist = Number(distance);
+    if(isNaN(dist)) { alert("forward "+distance+": distance provided is not a number!"); return; }
+    turtle_position.x += Math.sin(turtle_position.rotation/180*Math.PI)*dist;
+    turtle_position.y += Math.cos(turtle_position.rotation/180*Math.PI)*dist;
+    canvas_draw(line = true);
 }
 
 function skip(distance)
 {
-    canvas_x = canvas_x + Math.sin(canvas_rotation/180*Math.PI)*Number(distance);
-    canvas_y = canvas_y + Math.cos(canvas_rotation/180*Math.PI)*Number(distance);
-    canvas_context.moveTo(canvas_x,canvas_y);
-    canvas_context.stroke();
+    let dist = Number(distance);
+    if(isNaN(dist)) { alert("skip "+distance+": distance provided is not a number!"); return; }
+    turtle_position.x += Math.sin(turtle_position.rotation/180*Math.PI)*dist;
+    turtle_position.y += Math.cos(turtle_position.rotation/180*Math.PI)*dist;
+    canvas_draw(line = false);
 }
 
 function rotate(degrees)
 {
-    canvas_rotation = (canvas_rotation+Number(degrees))%360;
+    let deg = Number(degrees);
+    if(isNaN(deg)) { alert("rotate "+degrees+": degrees provided are not a number"); return; }
+    turtle_position.rotation = (turtle_position.rotation+deg)%360;
 }
 
 function log(variable)
