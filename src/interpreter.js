@@ -532,7 +532,7 @@ function evalBox(operations, variables = null)
                 for(let i = source.length -1 ; i >= 0; i--)
                 {
                     let elem = source[i];
-                    if(elem.value !== undefined)
+                    if(elem.value !== undefined && elem.value.nodeName != "BOX-CODE")
                     {
                         let new_var = [iter, elem.value];
                         variables = addNewVariable(variables, new_var);

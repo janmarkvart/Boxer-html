@@ -24,7 +24,7 @@
                         <button class="deletebox">delete</button>
                     </div>
                 </div>
-                <box-code>hello</box-code>
+                <box-code>apple</box-code>
             </data-box>
             <data-box id="outeritem2">
                 <div class="box-header">
@@ -34,7 +34,7 @@
                         <button class="deletebox">delete</button>
                     </div>
                 </div>
-                <box-code>hi</box-code>
+                <box-code>banana</box-code>
             </data-box>
             <data-box id="outeritem3">
                 <div class="box-header">
@@ -44,7 +44,7 @@
                         <button class="deletebox">delete</button>
                     </div>
                 </div>
-                <box-code>goodbye</box-code>
+                <box-code>pear</box-code>
             </data-box>
             <br>
             <doit-box id="func1">
@@ -241,11 +241,13 @@
                 </box-code>
             </data-box>
             <br>
+            complex.func1 end
+            <br>
         </box-code>
     </doit-box>
-    <doit-box id="line-forward">
+    <doit-box id="outerlist-test">
         <div class="box-header">
-            <box-name contenteditable=true>line-forward</box-name>
+            <box-name contenteditable=true>outerlist-test</box-name>
             <div class="header-right">
                 <button class="boxcode-hide">hide</button>
                 <button class="doit-execute">run</button>
@@ -253,8 +255,6 @@
             </div>
         </div>
         <box-code contenteditable=true>
-            forward 5
-            <br>
             <data-box id="varX">
                 <div class="box-header">
                     <box-name>varX</box-name>
@@ -263,16 +263,19 @@
                         <button class="deletebox">delete</button>
                     </div>
                 </div>
-                <box-code>hello</box-code>
+                <box-code>End</box-code>
             </data-box>
             <br>
-            log varX
+            outerlist.func1 Start
             <br>
-            log there
+            for x in outerlist
+            <box-code>
+                log x
+                <br>
+            </box-code>
             <br>
-            skip 10
+            outerlist.func1 varX
             <br>
-            forward 5
         </box-code>
     </doit-box>
     <doit-box id="inner1">
