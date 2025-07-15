@@ -570,7 +570,7 @@ function evalBox(operations, variables = null)
             
             continue;
         }
-        if(op.operation == 'change')
+        if(op.operation == "change")
         {
             if(op.operands.length < 2) { alert("Change operation requires 2 operands, "+op.operands.length+" provided!"); continue; }
             op.operands[1] = processOperand(op.operands[1], variables);
@@ -735,9 +735,7 @@ function createEmptyVariables(variables, op)
 
 function processOperands(op, variables)
 {
-    let changeModifier = 0;
-    if(op.operation === "change") {changeModifier = 1;}
-    for(let i = 0 + changeModifier; i < op.operands.length; i++)
+    for(let i = 0; i < op.operands.length; i++)
     {
         op.operands[i] = processOperand(op.operands[i], variables);
     }
