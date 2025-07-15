@@ -28,6 +28,8 @@ var primitives = {
     "forward": {function: forward, argcount: 1, needs_variables: false},
     "skip":  {function: skip, argcount: 1, needs_variables: false},
     "rotate":  {function: rotate, argcount: 1, needs_variables: false},
+    "left": {function: left, argcount: 1, needs_variables: false},
+    "right": {function: right, argcount: 1, needs_variables: false},
     "log": {function: log, argcount: 1, needs_variables: false}
 };
 
@@ -912,6 +914,20 @@ function rotate(degrees)
     let deg = Number(degrees);
     if(isNaN(deg)) { alert("rotate "+degrees+": degrees provided are not a number"); return; }
     turtle_position.rotation = (turtle_position.rotation+deg)%360;
+}
+
+function left(degrees)
+{
+    let deg = Number(degrees);
+    if(isNaN(deg)) { alert("rotate "+degrees+": degrees provided are not a number"); return; }
+    turtle_position.rotation = (turtle_position.rotation+deg)%360;
+}
+
+function right(degrees)
+{
+    let deg = Number(degrees);
+    if(isNaN(deg)) { alert("rotate "+degrees+": degrees provided are not a number"); return; }
+    turtle_position.rotation = (turtle_position.rotation-deg)%360;
 }
 
 function log(variable)
