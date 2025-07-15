@@ -535,8 +535,11 @@ function evalBox(operations, variables = null)
                     let elem = source[i];
                     if(elem.value !== undefined && elem.value.nodeName != "BOX-CODE")
                     {
-                        let new_var = [iter, elem.value];
-                        variables = addNewVariable(variables, new_var);
+                        variables = {
+                            name: iter,
+                            value: elem.value,
+                            next: variables
+                        };
                         let new_operations = parseBox(box);
                         let combined = new_operations.concat([{operation: "clear", operands: [1]}]);
                         operations.splice(processed_op_idx, 0, ...combined);
@@ -867,7 +870,8 @@ function createComplexVariable(addition)
     let variable = [];
     addition.forEach(elem => 
     {
-        if(elem.operands[1] != Array)
+        if(elem.operands.length == 1) {return;} //is clear operation
+        if(elem.operands[1].constructor != Array)
         {
             variable.push({
                 name: elem.operands[0],
