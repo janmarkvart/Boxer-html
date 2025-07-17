@@ -17,7 +17,6 @@ In contrast to the data-box, a `doit-box` serves as a way to define a block of e
 ##### Box-code
 
 The standalone box-code serves as a way to create a variation of doit-box which, instead of being called directly, is instead automatically executed as part of a parent box. All boxes defined within are inacessinble from the outside.
-TODO doit and boxcode
 
 ### Primitives
 
