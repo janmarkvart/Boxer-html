@@ -277,7 +277,6 @@ function templateInserter(current_target, key, template)
 
 function templateEventAdder(newbox)
 {
-    console.log(newbox);
     let hide_headers = newbox.getElementsByClassName("boxcode-hide");
     for(let i = 0; i < hide_headers.length; i++)
     {
