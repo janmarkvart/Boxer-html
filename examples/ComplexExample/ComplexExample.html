@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script type="module" src="interpreter/main.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <title>ComplexExample</title>
+</head>
+
+<body>
+    <data-box id="phone-book">
+        <div class="box-header">
+            <box-name contenteditable=true>phone-book</box-name>
+            <div class="header-right">
+                <button class="boxcode-hide">hide</button>
+                <button class="deletebox">delete</button>
+            </div>
+        </div>
+        <box-code contenteditable=true>
+            <data-box id="list">
+                <div class="box-header">
+                    <box-name>list</box-name>
+                    <div class="header-right">
+                        <button class="boxcode-hide">hide</button>
+                        <button class="deletebox">delete</button>
+                    </div>
+                </div>
+                <box-code>
+                    <data-box id="item1">
+                        <div class="box-header">
+                            <box-name>item1</box-name>
+                            <div class="header-right">
+                                <button class="boxcode-hide">show</button>
+                                <button class="deletebox">delete</button>
+                            </div>
+                        </div>
+                        <box-code style="display: none;">
+                            <data-box id="Name">
+                                <div class="box-header">
+                                    <box-name>Name</box-name>
+                                    <div class="header-right">
+                                        <button class="boxcode-hide">hide</button>
+                                        <button class="deletebox">delete</button>
+                                    </div>
+                                </div>
+                                <box-code>Adam Savage</box-code>
+                            </data-box>
+                            <br>
+                            <data-box id="Address">
+                                <div class="box-header">
+                                    <box-name>Address</box-name>
+                                    <div class="header-right">
+                                        <button class="boxcode-hide">hide</button>
+                                        <button class="deletebox">delete</button>
+                                    </div>
+                                </div>
+                                <box-code>Prague 22</box-code>
+                            </data-box>
+                            <br>
+                            <data-box id="Phone">
+                                <div class="box-header">
+                                    <box-name>Phone</box-name>
+                                    <div class="header-right">
+                                        <button class="boxcode-hide">hide</button>
+                                        <button class="deletebox">delete</button>
+                                    </div>
+                                </div>
+                                <box-code>333-2489</box-code>
+                            </data-box>
+                        </box-code>
+                    </data-box>
+                    <data-box id="item2">
+                        <div class="box-header">
+                            <box-name>item2</box-name>
+                            <div class="header-right">
+                                <button class="boxcode-hide">hide</button>
+                                <button class="deletebox">delete</button>
+                            </div>
+                        </div>
+                        <box-code>
+                            <data-box id="Name">
+                                <div class="box-header">
+                                    <box-name>Name</box-name>
+                                    <div class="header-right">
+                                        <button class="boxcode-hide">hide</button>
+                                        <button class="deletebox">delete</button>
+                                    </div>
+                                </div>
+                                <box-code>Aunt Tillie</box-code>
+                            </data-box>
+                            <br>
+                            <data-box id="Address">
+                                <div class="box-header">
+                                    <box-name>Address</box-name>
+                                    <div class="header-right">
+                                        <button class="boxcode-hide">hide</button>
+                                        <button class="deletebox">delete</button>
+                                    </div>
+                                </div>
+                                <box-code>43 Bellwood</box-code>
+                            </data-box>
+                            <br>
+                            <data-box id="Phone">
+                                <div class="box-header">
+                                    <box-name>Phone</box-name>
+                                    <div class="header-right">
+                                        <button class="boxcode-hide">hide</button>
+                                        <button class="deletebox">delete</button>
+                                    </div>
+                                </div>
+                                <box-code>555-1212</box-code>
+                            </data-box>
+                        </box-code>
+                    </data-box>
+                    <data-box id="item3">
+                        <div class="box-header">
+                            <box-name>item3</box-name>
+                            <div class="header-right">
+                                <button class="boxcode-hide">show</button>
+                                <button class="deletebox">delete</button>
+                            </div>
+                        </div>
+                        <box-code style="display: none;">
+                            <data-box id="Name">
+                                <div class="box-header">
+                                    <box-name>Name</box-name>
+                                    <div class="header-right">
+                                        <button class="boxcode-hide">hide</button>
+                                        <button class="deletebox">delete</button>
+                                    </div>
+                                </div>
+                                <box-code>John Doe</box-code>
+                            </data-box>
+                            <br>
+                            <data-box id="Address">
+                                <div class="box-header">
+                                    <box-name>Address</box-name>
+                                    <div class="header-right">
+                                        <button class="boxcode-hide">hide</button>
+                                        <button class="deletebox">delete</button>
+                                    </div>
+                                </div>
+                                <box-code>58 Paris</box-code>
+                            </data-box>
+                            <br>
+                            <data-box id="Phone">
+                                <div class="box-header">
+                                    <box-name>Phone</box-name>
+                                    <div class="header-right">
+                                        <button class="boxcode-hide">hide</button>
+                                        <button class="deletebox">delete</button>
+                                    </div>
+                                </div>
+                                <box-code>1289-7583</box-code>
+                            </data-box>
+                        </box-code>
+                    </data-box>
+                    <br>
+                </box-code>
+            </data-box>
+            <br>
+            <doit-box id="func1">
+                <div class="box-header">
+                    <box-name contenteditable=true>func1</box-name>
+                    <div class="header-right">
+                        <button class="boxcode-hide">hide</button>
+                        <button class="doit-execute">run</button>
+                        <button class="deletebox">delete</button>
+                    </div>
+                </div>
+                <box-code>
+                    for x in list 
+                    <box-code>
+                        if x.Name == Name
+                        <box-code>
+                            change Number x.Phone
+                            <br>
+                        </box-code>
+                        <br>
+                    </box-code>
+                    <br>
+                </box-code>
+            </doit-box>
+            <br>
+            <data-box id="Number">
+                <div class="box-header">
+                    <box-name>Number</box-name>
+                    <div class="header-right">
+                        <button class="boxcode-hide">hide</button>
+                        <button class="deletebox">delete</button>
+                    </div>
+                </div>
+                <box-code>
+                    <br>
+                </box-code>
+            </data-box>
+            <data-box id="Name">
+                <div class="box-header">
+                    <box-name>Name</box-name>
+                    <div class="header-right">
+                        <button class="boxcode-hide">hide</button>
+                        <button class="deletebox">delete</button>
+                    </div>
+                </div>
+                <box-code>
+                    Aunt Tillie
+                    <br>
+                </box-code>
+            </data-box>
+        </box-code>
+    </data-box>
+</body>
+</html>

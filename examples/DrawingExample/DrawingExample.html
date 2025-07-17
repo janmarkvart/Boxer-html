@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script type="module" src="interpreter/main.js"></script>
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <title>DrawingExample</title>
+</head>
+
+<body>
+    <doit-box id="arcleft">
+        <div class="box-header">
+            <box-name contenteditable=true>arcleft</box-name>
+            <div class="header-right">
+                <button class="boxcode-hide">hide</button>
+                <button class="doit-execute">run</button>
+                <button class="deletebox">delete</button>
+            </div>
+        </div>
+        <box-code contenteditable=true>
+            input size degrees
+            <br>
+            repeat degrees
+            <box-code>
+                forward size
+                <br>
+                left 1
+            </box-code>
+            <br>
+        </box-code>
+    </doit-box>
+    <doit-box id="arcright">
+        <div class="box-header">
+            <box-name contenteditable=true>arcright</box-name>
+            <div class="header-right">
+                <button class="boxcode-hide">hide</button>
+                <button class="doit-execute">run</button>
+                <button class="deletebox">delete</button>
+            </div>
+        </div>
+        <box-code contenteditable=true>
+            input size degrees
+            <br>
+            repeat degrees
+            <box-code>
+                forward size
+                <br>
+                right 1
+            </box-code>
+            <br>
+        </box-code>
+    </doit-box>
+    <doit-box id="draw_sun">
+        <div class="box-header">
+            <box-name contenteditable=true>draw_sun</box-name>
+            <div class="header-right">
+                <button class="boxcode-hide">hide</button>
+                <button class="doit-execute">run</button>
+                <button class="deletebox">delete</button>
+            </div>
+        </div>
+        <box-code contenteditable=true>
+            sun 0.7
+            <br>
+        </box-code>
+    </doit-box>
+    <br>
+    <doit-box id="sun">
+        <div class="box-header">
+            <box-name contenteditable=true>sun</box-name>
+            <div class="header-right">
+                <button class="boxcode-hide">hide</button>
+                <button class="doit-execute">run</button>
+                <button class="deletebox">delete</button>
+            </div>
+        </div>
+        <box-code contenteditable=true>
+            input r
+            <br>
+                <doit-box id="ray">
+                    <div class="box-header">
+                        <box-name contenteditable=true>ray</box-name>
+                        <div class="header-right">
+                            <button class="boxcode-hide">hide</button>
+                            <button class="doit-execute">run</button>
+                            <button class="deletebox">delete</button>
+                        </div>
+                    </div>
+                    <box-code contenteditable=true>
+                        repeat 2
+                        <box-code>
+                            arcleft r 90
+                            <br>
+                            arcright r 90
+                        </box-code>
+                        <br>
+                    </box-code>
+                </doit-box>
+            <br>
+            repeat 9
+            <box-code>
+                ray
+                <br>
+                right 160
+            </box-code>
+            <br>
+        </box-code>
+    </doit-box>
+    <canvas id="main-canvas" width="250" height="250"></canvas>
+</body>
+</html>
