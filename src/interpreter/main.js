@@ -263,7 +263,8 @@ function templateInserter(current_target, key, template)
                 child.data = child.data.replaceAll(key, "");
                 child.after(document.createRange().createContextualFragment(template));
                 //add event listeners
-                let newbox = child.nextSibling.nextSibling;
+                let newbox = child.nextSibling;
+                if(newbox.nodeType != Node.ELEMENT_NODE) { newbox = newbox.nextSibling; }
                 templateEventAdder(newbox);
             }
         }
@@ -276,6 +277,7 @@ function templateInserter(current_target, key, template)
 
 function templateEventAdder(newbox)
 {
+    console.log(newbox);
     let hide_headers = newbox.getElementsByClassName("boxcode-hide");
     for(let i = 0; i < hide_headers.length; i++)
     {
