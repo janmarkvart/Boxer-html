@@ -1,28 +1,9 @@
+import parseBox from "./BoxParser.js";
+import turtle_api from "./TurtleGraphics.js";
+
 //--------------------------------------------------------------------------------
     // Initial Setup and canvas preparation
 //--------------------------------------------------------------------------------
-
-var canvas_pointer = null;
-var canvas_context;
-var turtle_position = {x: 50, y: 30, rotation: 0};
-
-function canvas_draw(draw_line)
-{
-    if(canvas_pointer == null)
-    {
-        alert("Cannot proceed with drawing operation, no canvas present!");
-        return;
-    }
-    if(draw_line)
-    {
-        canvas_context.lineTo(turtle_position.x, turtle_position.y);
-    }
-    else
-    {
-        canvas_context.moveTo(turtle_position.x, turtle_position.y);
-    }
-    canvas_context.stroke();
-}
 
 var primitives = {
     "forward": {function: forward, argcount: 1, needs_variables: false},
@@ -46,9 +27,9 @@ var doitbox_template =
 <div class="box-header">
 <box-name>newdoitbox</box-name>
 <div class="header-right">
-<button class="boxcode-hide" onclick="boxHeaderShowHide(event)">hide</button>
-<button class="doit-execute" onclick="boxHeaderRun(event)">run</button>
-<button class="deletebox" onclick="boxHeaderDelete(event)">delete</button>
+<button class="boxcode-hide">hide</button>
+<button class="doit-execute">run</button>
+<button class="deletebox">delete</button>
 </div>
 </div>
 <box-code contenteditable=true>
@@ -64,8 +45,8 @@ var databox_template =
 <div class="box-header">
 <box-name>newdatabox</box-name>
 <div class="header-right">
-<button class="boxcode-hide" onclick="boxHeaderShowHide(event)">hide</button>
-<button class="deletebox" onclick="boxHeaderDelete(event)">delete</button>
+<button class="boxcode-hide">hide</button>
+<button class="deletebox">delete</button>
 </div>
 </div>
 <box-code contenteditable=true>
@@ -84,13 +65,8 @@ var boxer_templates = {
 window.onload = function() 
 {
     //prepare canvas to be callable by boxer functions
-    canvas_pointer = document.getElementById('main-canvas');
-    if(canvas_pointer != null)
-    {
-        canvas_context = canvas_pointer.getContext("2d");
-        canvas_context.beginPath();
-        canvas_context.moveTo(turtle_position.x,turtle_position.y);
-    }
+    let canvas_id = "main-canvas";
+    turtle_api.setup(canvas_id);
     //add execute functionality to doit-boxes
     let doit_runners = document.getElementsByClassName("doit-execute");
     for (let i = 0; i < doit_runners.length; i++) {
@@ -142,7 +118,7 @@ function boxHeaderShowHide(e)
     {
         target = target.parentElement;
     }
-    target_hide_button = target.getElementsByClassName("boxcode-hide")[0];
+    let target_hide_button = target.getElementsByClassName("boxcode-hide")[0];
     target = target.getElementsByTagName('BOX-CODE')[0];
     if (target.style.display === "none") 
     {
@@ -286,6 +262,9 @@ function templateInserter(current_target, key, template)
             {
                 child.data = child.data.replaceAll(key, "");
                 child.after(document.createRange().createContextualFragment(template));
+                //add event listeners
+                let newbox = child.nextSibling.nextSibling;
+                templateEventAdder(newbox);
             }
         }
         if(child.nodeName == 'DATA-BOX' || child.nodeName == 'DOIT-BOX')
@@ -293,6 +272,37 @@ function templateInserter(current_target, key, template)
             templateInserter(child.getElementsByTagName('BOX-CODE')[0], key, template);
         }
     });
+}
+
+function templateEventAdder(newbox)
+{
+    let hide_headers = newbox.getElementsByClassName("boxcode-hide");
+    for(let i = 0; i < hide_headers.length; i++)
+    {
+        let elem = hide_headers[i];
+        elem.onclick = function(e) { boxHeaderShowHide(e); }
+    }
+
+    let show_headers = newbox.getElementsByClassName("boxcode-show");
+    for(let i = 0; i < show_headers.length; i++)
+    {
+        let elem = show_headers[i];
+        elem.onclick = function(e) { boxHeaderShowHide(e); }
+    };
+
+    let run_headers = newbox.getElementsByClassName("doit-execute");
+    for(let i = 0; i < run_headers.length; i++)
+    {
+        let elem = run_headers[i];
+        elem.onclick = function(e) { boxHeaderRun(e); }
+    };
+    
+    let delete_headers = newbox.getElementsByClassName("deletebox");
+    for(let i = 0; i < delete_headers.length; i++)
+    {
+        let elem = delete_headers[i];
+        elem.onclick = function(e) { boxHeaderDelete(e); }
+    };
 }
 
 //--------------------------------------------------------------------------------
@@ -304,147 +314,6 @@ function interpretBox(variables, caller_box)
     //interpretation of the original caller box
     let operations = parseBox(caller_box);
     evalBox(operations, variables);
-}
-
-function parseBox(caller_box) 
-{
-    //translates the provided box element into individual operations & their operands to be evaluated,
-    // separated into variables, nested code, and operations
-    let operations = [];
-    let variables = [];
-    let nested_doits = [];
-    let current_operation = {
-        operation: null,
-        operands: []
-    };
-    let box_code;
-    if(caller_box.nodeName == "DOIT-BOX" || caller_box.nodeName == "DATA-BOX")
-    {
-        box_code = caller_box.getElementsByTagName('BOX-CODE')[0].childNodes;
-    }
-    else
-    {
-        box_code = caller_box.childNodes;
-    }
-    for(let i = 0; i < box_code.length; i++)
-    {
-        let child = box_code[i];
-        if(child.nodeType == Node.TEXT_NODE)
-        {
-            let trimmed = child.data.trim();
-            if(trimmed == "") {continue;}
-            let words = trimmed.split(/\s+/);//split by whitespace
-            let idx = 0;
-            if(current_operation.operation == null)
-            {
-                //input operation can only be first, otherwise we ignore it entirely
-                if(words[idx] == "input" && i != 0){continue;}
-                current_operation.operation = words[idx];
-                idx++;
-            }
-            for(let j = idx; j < words.length; j++)
-            {
-                current_operation.operands.push(words[j]);
-            }
-        }
-        if(child.nodeType == Node.ELEMENT_NODE)
-        {
-            if(child.nodeName == "BR" && current_operation.operation != null)
-            {
-                //<BR> works as a universal separator between operations
-                operations.push(current_operation);
-                current_operation = {
-                    operation: null,
-                    operands: []
-                };
-            }
-            if(child.nodeName == "BOX-CODE")
-            {
-                if(current_operation.operation != null) {
-                    //is part of repeat
-                    current_operation.operands.push(child);
-                }
-                else
-                {
-                    current_operation = {
-                        operation: "nested_code",
-                        operands: [child]
-                    };
-                }
-            }
-            if(child.nodeName == "DOIT-BOX")
-            {
-                if(current_operation.operation != null) {
-                    //is part of repeat
-                    current_operation.operands.push(child);
-                }
-                //also add is as a "variable"
-                let doitbox_id = child.id;
-                let doitbox_content = child.getElementsByTagName('BOX-CODE')[0];
-                nested_doits.push({
-                    operation: "nested_doit",
-                    operands: [doitbox_id, doitbox_content]
-                });
-            }
-            if(child.nodeName == "DATA-BOX")
-            {
-                //try to create new variable
-                let databox_content = child.getElementsByTagName('BOX-CODE')[0].childNodes;
-                if(databox_content.length == 1 && databox_content[0].nodeType == Node.TEXT_NODE)
-                {
-                    //simple databox variable
-                    let possible_var = databox_content[0].wholeText;
-                    //if operation exists, add it as an operand
-                    if(current_operation.operation != null)
-                    {
-                        current_operation.operands.push(possible_var);
-                        operations.push(current_operation);
-                        current_operation = {
-                            operation: null,
-                            operands: []
-                        };
-                    }
-                    //and add new op to create variable in eval box
-                    variables.push({
-                        operation: "new_var",
-                        operands: [child.getElementsByTagName("BOX-NAME")[0].innerText, possible_var]
-                    });
-                }
-                else
-                {
-                    //complex databox variable
-                    let complex_variable = parseBox(child);
-                    if(current_operation.operation != null)
-                    {
-                        operations.push(current_operation);
-                        current_operation = {
-                            operation: null,
-                            operands: []
-                        };
-                    }
-                    //and add new op to create variable in eval box
-                    variables.push({
-                        operation: "new_var",
-                        operands: [child.getElementsByTagName("BOX-NAME")[0].innerText, complex_variable]
-                    });
-                }
-            }
-        }
-    };
-    if(current_operation.operation != null)
-    {
-        operations.push(current_operation);
-    }
-    //add a clear operation to clear variables created in this scope
-    operations.push({
-        operation: "clear",
-        operands: [variables.length + nested_doits.length]
-    });
-    //merge all three types together in a way that all variables are prepared first, then boxes, then other operations
-    //this ensures all variables and doit-boxes are ready for potential use in operations, 
-    // eliminating the need for a more complex evaluation down the line
-    all_operations = variables.concat(nested_doits, operations);
-    return all_operations;
 }
 
 //--------------------------------------------------------------------------------
@@ -919,32 +788,28 @@ function forward(distance)
 {
     let dist = Number(distance);
     if(isNaN(dist)) { alert("forward "+distance+": distance provided is not a number!"); return; }
-    turtle_position.x += Math.sin(turtle_position.rotation/180*Math.PI)*dist;
-    turtle_position.y += Math.cos(turtle_position.rotation/180*Math.PI)*dist;
-    canvas_draw(line = true);
+    turtle_api.updateposition("forward", dist);
 }
 
 function skip(distance)
 {
     let dist = Number(distance);
     if(isNaN(dist)) { alert("skip "+distance+": distance provided is not a number!"); return; }
-    turtle_position.x += Math.sin(turtle_position.rotation/180*Math.PI)*dist;
-    turtle_position.y += Math.cos(turtle_position.rotation/180*Math.PI)*dist;
-    canvas_draw(line = false);
+    turtle_api.updateposition("skip", dist);
 }
 
 function left(degrees)
 {
     let deg = Number(degrees);
     if(isNaN(deg)) { alert("rotate "+degrees+": degrees provided are not a number"); return; }
-    turtle_position.rotation = (turtle_position.rotation+deg)%360;
+    turtle_api.updateposition("left", deg);
 }
 
 function right(degrees)
 {
     let deg = Number(degrees);
     if(isNaN(deg)) { alert("rotate "+degrees+": degrees provided are not a number"); return; }
-    turtle_position.rotation = (turtle_position.rotation-deg)%360;
+    turtle_api.updateposition("right", deg);
 }
 
 function log(variable)
