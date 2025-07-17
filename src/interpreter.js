@@ -4,7 +4,7 @@
 
 var canvas_pointer = null;
 var canvas_context;
-var turtle_position = {x: 20, y: 20, rotation: 45};
+var turtle_position = {x: 50, y: 30, rotation: 0};
 
 function canvas_draw(draw_line)
 {
@@ -509,7 +509,7 @@ function evalBox(operations, variables = null)
         if(op.operation == "repeat")
         {
             if(op.operands.length < 2) { alert("Repeat operation requires 2 operands, "+op.operands.length+" provided!"); continue; }
-            let times = Number(op.operands[0]);
+            let times = Number(processOperand(op.operands[0], variables));
             if(isNaN(times)) { alert("Repeat: first operand has to be a number!"); continue; }
             let box = op.operands[1];
             for(let i = 0; i < times; i++)
@@ -583,12 +583,19 @@ function evalBox(operations, variables = null)
                 {
                     //found the variable to change
                     variables_copy.value = op.operands[1];
-                    //also change the box itself
-                    let target_box_code = document.getElementById(op.operands[0]).getElementsByTagName('BOX-CODE')[0];
-                    target_box_code.innerText = op.operands[1];
                     break;
                 }
                 variables_copy = variables_copy.next;
+            }
+            //also update the box itself
+            let target_box = document.getElementById(op.operands[0]);
+            if(target_box != null)
+            {
+                if(target_box.nodeName == "DATA-BOX" || target_box.nodeName == "DOIT-BOX")
+                {
+                    let target_box_code = target_box.getElementsByTagName('BOX-CODE')[0];
+                    target_box_code.innerText = op.operands[1];
+                }
             }
             continue;
         }
@@ -664,13 +671,21 @@ function evalBox(operations, variables = null)
                 let candidates = curr_scope.childNodes;
                 candidates.forEach(candidate => 
                 {
+                    if(candidate.nodeName == "DOIT-BOX" && candidate.id == spl[spl_idx])
+                    {
+                        found = true;
+                        variables = createEmptyVariables(variables, op);
+                        let new_operations = parseBox(candidate);
+                        new_operations[new_operations.length - 1].operands[0] += op.operands.length;
+                        operations.splice(processed_op_idx, 0, ...new_operations);
+                        return;
+                    }
                     if(candidate.nodeName == "DATA-BOX" && candidate.id == spl[spl_idx])
                     {
                         //found the box to call
                         found = true;
                         let parsed = parseBox(candidate);
                         let processed = addNewVariable(null, [candidate.id, parsed]);
-
                         spl_idx++;
                         while(spl_idx < spl.length)
                         {
@@ -800,6 +815,14 @@ function processOperand(operand, variables)
                     if(candidate.nodeName == "DATA-BOX" && candidate.id == spl[spl_idx])
                     {
                         found = true;
+                        //simple variable case: no nested data boxes
+                        let candidate_content = candidate.getElementsByTagName("BOX-CODE")[0];
+                        if(candidate_content.getElementsByTagName("DOIT-BOX").length == 0 &&
+                            candidate_content.getElementsByTagName("DATA-BOX").length == 0 && spl.length == 1)
+                        {
+                            operand = candidate_content.innerText.trim();
+                            return operand;
+                        }
                         let parsed = parseBox(candidate);
                         let processed = addNewVariable(null, [candidate.id, parsed]);
 
@@ -868,7 +891,7 @@ function createComplexVariable(addition)
     let variable = [];
     addition.forEach(elem => 
     {
-        if(elem.operands.length == 1) {return;} //is clear operation
+        if(elem.operation == "clear" || elem.operands.length == 1) {return;} //filter non-variables
         if(elem.operands[1].constructor != Array)
         {
             variable.push({
