@@ -42,6 +42,7 @@ var databox_template =
 <box-name>newdatabox</box-name>
 <div class="header-right" contenteditable="false">
 <button class="boxcode-hide">hide</button>
+<button class="templatebox">template</button>
 <button class="deletebox">delete</button>
 </div>
 </div>
@@ -83,6 +84,14 @@ window.onload = function()
         let element = box_deletes[i];
         element.onclick = function(e) {
             boxHeaderDelete(e);
+        }
+    }
+    //add ability to create template from data-box
+    let box_templaters = document.getElementsByClassName("templatebox");
+    for (let i = 0; i < box_templaters.length; i++) {
+        let element = box_templaters[i];
+        element.onclick = function(e) {
+            boxTemplateToggle(e);
         }
     }
 }
@@ -134,6 +143,29 @@ function boxHeaderDelete(e)
         target = target.parentElement;
     }
     if( confirm("Are you sure you want to delete this box?") == true) { target.remove(); }
+}
+function boxTemplateToggle(e)
+{
+    console.log("I am template manager...");
+    let target = e.target;
+    while(target.nodeName != 'DATA-BOX')
+    {
+        target = target.parentElement;
+    }
+    if(target.id.length != 1) {
+        //since the templates are invoked by a single key press, templates with multiple-char names are invalid
+        alert( "Could not create template: make sure data-box name is only 1 character long!" );
+        return;
+    }
+    
+    if(target.classList.contains('activetemplate'))
+    {
+        target.classList.remove('activetemplate');
+    }
+    else
+    {
+        target.classList.add('activetemplate');
+    }
 }
 
 //--------------------------------------------------------------------------------
@@ -311,6 +343,12 @@ function templateEventAdder(newbox)
         let elem = delete_headers[i];
         elem.onclick = function(e) { boxHeaderDelete(e); }
     };
+
+    let box_templaters = newbox.getElementsByClassName("templatebox");
+    for (let i = 0; i < box_templaters.length; i++) {
+        let elem = box_templaters[i];
+        elem.onclick = function(e) { boxTemplateToggle(e); }
+    }
 }
 
 //--------------------------------------------------------------------------------

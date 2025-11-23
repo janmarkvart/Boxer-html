@@ -46,3 +46,6 @@ box-code {
     margin-left: auto;
     padding-left: 5px;
 }
+.activetemplate {
+    background-color: dimgray;
+}
