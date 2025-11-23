@@ -157,14 +157,15 @@ function boxTemplateToggle(e)
         alert( "Could not create template: make sure data-box name is only 1 character long!" );
         return;
     }
-    
     if(target.classList.contains('activetemplate'))
     {
         target.classList.remove('activetemplate');
+        target.getElementsByTagName("BOX-NAME")[0].setAttribute("contenteditable", "true");
     }
     else
     {
         target.classList.add('activetemplate');
+        target.getElementsByTagName("BOX-NAME")[0].setAttribute("contenteditable", "false");
     }
 }
 
