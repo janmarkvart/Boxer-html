@@ -161,11 +161,15 @@ function boxTemplateToggle(e)
     {
         target.classList.remove('activetemplate');
         target.getElementsByTagName("BOX-NAME")[0].setAttribute("contenteditable", "true");
+        delete boxer_templates[target.id];
     }
     else
     {
         target.classList.add('activetemplate');
         target.getElementsByTagName("BOX-NAME")[0].setAttribute("contenteditable", "false");
+        let template_contents = target.getElementsByTagName('BOX-CODE')[0].innerHTML;
+        template_contents = template_contents.replaceAll("&#8204", "");
+        boxer_templates[target.id] = {tag_name: 'user_'+target.id, template: template_contents};
     }
 }
 
