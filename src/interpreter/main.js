@@ -15,9 +15,7 @@ var primitives = {
 
 var boxcode_template = 
 `
-<box-code contenteditable=true>
-_
-</box-code>
+<box-code contenteditable=true>&#8204</box-code>
 <br>
 `;
 
@@ -26,16 +24,14 @@ var doitbox_template =
 <doit-box id="newdoitbox">
 <div class="box-header">
 <box-name>newdoitbox</box-name>
-<div class="header-right">
+<div class="header-right" contenteditable="false">
 <button class="boxcode-hide">hide</button>
 <button class="doit-execute">run</button>
 <button class="deletebox">delete</button>
 </div>
 </div>
-<box-code contenteditable=true>
-_
-</box-code>
-</doit-box>
+<box-code contenteditable=true>&#8204</box-code>
+</doit-box>&#8204
 <br>
 `;
 
@@ -44,15 +40,13 @@ var databox_template =
 <data-box id="newdatabox">
 <div class="box-header">
 <box-name>newdatabox</box-name>
-<div class="header-right">
+<div class="header-right" contenteditable="false">
 <button class="boxcode-hide">hide</button>
 <button class="deletebox">delete</button>
 </div>
 </div>
-<box-code contenteditable=true>
-_
-</box-code>
-</data-box>
+<box-code contenteditable=true>&#8204</box-code>
+</data-box>&#8204
 <br>
 `
 
@@ -213,7 +207,7 @@ window.onclick = function(e)
     },{ once: true });//only triggers once, so no need to remove the listener manually
     if(original_target.nodeName == 'BOX-CODE')
     {
-        document.activeElement.onkeyup = function()
+        document.activeElement.onkeyup = function(e)
         {
             //detect whether user pressed a key which corresponds to a box template
             for(let key in boxer_templates)
@@ -221,6 +215,19 @@ window.onclick = function(e)
                 if(original_target.innerHTML.indexOf(key) >= 0)
                 {
                     insertBox(original_target, key);
+                }
+            }
+            console.log(document.getSelection().focusNode.parentElement);
+        }
+        this.document.activeElement.onkeydown = function(e)
+        {
+            if( e.key === "Backspace" || e.key === "Delete")
+            {
+                if(document.getSelection().anchorOffset <= 1)
+                {
+                    console.log("stop!");
+                    e.preventDefault();
+                    e.stopPropagation();
                 }
             }
         }
