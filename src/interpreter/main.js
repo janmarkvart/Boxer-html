@@ -15,7 +15,7 @@ var primitives = {
 
 var boxcode_template = 
 `
-<box-code contenteditable=true>&#8204</box-code>
+<box-code contenteditable=true> </box-code>
 <br>
 `;
 
@@ -30,8 +30,8 @@ var doitbox_template =
 <button class="deletebox">delete</button>
 </div>
 </div>
-<box-code contenteditable=true>&#8204</box-code>
-</doit-box>&#8204
+<box-code contenteditable=true>&#8203 </box-code>
+</doit-box>&#8203
 <br>
 `;
 
@@ -46,8 +46,8 @@ var databox_template =
 <button class="deletebox">delete</button>
 </div>
 </div>
-<box-code contenteditable=true>&#8204</box-code>
-</data-box>&#8204
+<box-code contenteditable=true>&#8203 </box-code>
+</data-box>&#8203 
 <br>
 `
 
@@ -168,7 +168,7 @@ function boxTemplateToggle(e)
         target.classList.add('activetemplate');
         target.getElementsByTagName("BOX-NAME")[0].setAttribute("contenteditable", "false");
         let template_contents = target.getElementsByTagName('BOX-CODE')[0].innerHTML;
-        template_contents = template_contents.replaceAll("&#8204", "");
+        template_contents = template_contents.replaceAll("&#8203 ", "");
         boxer_templates[target.id] = {tag_name: 'user_'+target.id, template: template_contents};
     }
 }
@@ -254,15 +254,24 @@ window.onclick = function(e)
                     insertBox(original_target, key);
                 }
             }
-            console.log(document.getSelection().focusNode.parentElement);
         }
         this.document.activeElement.onkeydown = function(e)
         {
             if( e.key === "Backspace" || e.key === "Delete")
             {
-                if(document.getSelection().anchorOffset <= 1)
+                //prevent undesirable autodeletion of html elements if: 
+                // we are at the beginning of a text node 
+                // + selected text area is first in box-code or after a doit-box/data-box
+                // (nested standalone box-code is still able to be auto-deleted - intended behavior)
+                let caret_position = document.getSelection();
+                if(caret_position.anchorOffset <= 1 
+                    && caret_position.anchorNode.parentElement.parentElement.nodeName != 'BOX-CODE'
+                    && (
+                        caret_position.anchorNode.parentElement.childNodes[0] == caret_position.anchorNode 
+                        || caret_position.anchorNode.previousSibling.nodeName == 'DOIT-BOX' 
+                        || caret_position.anchorNode.previousSibling.nodeName == 'DATA-BOX')
+                    )//what a beauty!
                 {
-                    console.log("stop!");
                     e.preventDefault();
                     e.stopPropagation();
                 }
@@ -288,7 +297,7 @@ function insertBox(original_target, key)
         }
         let s = window.getSelection();
         let r = document.createRange();
-        r.setStart(new_box, 0);
+        r.setStart(new_box, 1);
         r.setEnd(new_box, 1);
         s.removeAllRanges();
         s.addRange(r);
