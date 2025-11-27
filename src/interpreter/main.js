@@ -1,5 +1,6 @@
 import parseBox from "./BoxParser.js";
 import turtle_api from "./TurtleGraphics.js";
+import template_manager from "./TemplateManager.js";
 
 //--------------------------------------------------------------------------------
     // Initial Setup and canvas preparation
@@ -146,38 +147,39 @@ function boxHeaderDelete(e)
 }
 function boxTemplateToggle(e)
 {
-    console.log("I am template manager...");
     let target = e.target;
     while(target.nodeName != 'DATA-BOX')
     {
         target = target.parentElement;
     }
     let box_id = target.id.substring(1);
-    if(box_id.length != 1) {
-        //since the templates are invoked by a single key press, templates with multiple-char names are invalid
-        alert( "Could not create template: make sure data-box name is only 1 character long!" );
-        return;
-    }
+    let template_contents = target.getElementsByTagName('BOX-CODE')[0].innerHTML;
+
     if(target.classList.contains('activetemplate'))
     {
         //removing existing template...
         target.classList.remove('activetemplate');
         target.getElementsByTagName("BOX-NAME")[0].setAttribute("contenteditable", "true");
-        delete boxer_templates[box_id];
+        template_manager.removeTemplate(box_id);
         return;
     }
-    if(box_id in boxer_templates)
-    {
-        //template overriding is not allowed
-        alert( "Could not create template: template with this key already exists!" );
-        return;
+
+    let res = template_manager.tryAddTemplate(box_id, template_contents);
+    switch (res) {
+        case -1:
+            alert( "Could not create template: default templates cannot be overriden!" );
+            break;
+        case -2:
+            alert( "Could not create template: user template with this key already exists!" );
+            break;
+        case -3:
+            alert( "Could not create template: make sure data-box name is only 1 character long!" );
+            break;
+        default: //creating template...
+            target.classList.add('activetemplate');
+            target.getElementsByTagName("BOX-NAME")[0].setAttribute("contenteditable", "false");
+            break;
     }
-    //creating template...
-    target.classList.add('activetemplate');
-    target.getElementsByTagName("BOX-NAME")[0].setAttribute("contenteditable", "false");
-    let template_contents = target.getElementsByTagName('BOX-CODE')[0].innerHTML;
-    template_contents = template_contents.replaceAll("&#8203 ", "");
-    boxer_templates[box_id] = {tag_name: 'user_'+box_id, template: template_contents};
 }
 
 //--------------------------------------------------------------------------------
@@ -254,12 +256,13 @@ window.onclick = function(e)
         document.activeElement.onkeyup = function(e)
         {
             //detect whether user pressed a key which corresponds to a box template
-            for(let key in boxer_templates)
+            let res = template_manager.tryGetTemplate(e.key);
+            if(res !== undefined)
             {
-                if(original_target.innerHTML.indexOf(key) >= 0)
-                {
-                    insertBox(original_target, key);
-                }
+                let caret_node = document.getSelection().focusNode;
+                caret_node.nodeValue = caret_node.nodeValue.replaceAll(e.key, "");
+                caret_node.after(document.createRange().createContextualFragment(res.template));
+                //TODO: set focus into default boxer templates
             }
         }
         this.document.activeElement.onkeydown = function(e)
