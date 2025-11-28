@@ -260,9 +260,29 @@ window.onclick = function(e)
             if(res !== undefined)
             {
                 let caret_node = document.getSelection().focusNode;
+                if(caret_node.parentElement.nodeName === 'BOX-NAME') { return; }
                 caret_node.nodeValue = caret_node.nodeValue.replaceAll(e.key, "");
                 caret_node.after(document.createRange().createContextualFragment(res.template));
-                //TODO: set focus into default boxer templates
+                //add events to header buttons
+                let newbox = caret_node.nextSibling;
+                if(newbox.nodeType != Node.ELEMENT_NODE) { newbox = newbox.nextSibling; }
+                templateEventAdder(newbox);
+                if(res.type === "original_template")
+                {
+                    //one of default templates, place focus into newly added box's box-code for ease of use
+                    let box_list = original_target.getElementsByTagName(res.tag_name);
+                    let new_box = box_list[box_list.length -1];
+                    if(res.tag_name != "box-code")
+                    {
+                        new_box = new_box.getElementsByTagName('box-code')[0];
+                    }
+                    let s = window.getSelection();
+                    let r = document.createRange();
+                    r.setStart(new_box, 1);
+                    r.setEnd(new_box, 1);
+                    s.removeAllRanges();
+                    s.addRange(r);
+                }
             }
         }
         this.document.activeElement.onkeydown = function(e)

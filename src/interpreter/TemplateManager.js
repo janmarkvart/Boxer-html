@@ -45,9 +45,9 @@ var databox_template =
 `
 
 var boxer_templates = { //default templates provided by boxer-HTML
-    "[": {tag_name : "box-code", template: boxcode_template},
-    "]": {tag_name : "doit-box", template: doitbox_template},
-    "{": {tag_name : "data-box", template: databox_template}
+    "[": {type: "original_template", tag_name : "box-code", template: boxcode_template},
+    "]": {type: "original_template", tag_name : "doit-box", template: doitbox_template},
+    "{": {type: "original_template", tag_name : "data-box", template: databox_template}
 }
 
 var user_templates = {}
@@ -58,7 +58,7 @@ function tryAddTemplate(key, template) {
     if(key.length != 1)        { return -3; } //key must be 1 char long to be easily invoked by typing
 
     template = template.replaceAll(nbspc, "");
-    boxer_templates[key] = {tag_name: "user_"+key, template: template};
+    boxer_templates[key] = {type: "user_template", tag_name: "user_"+key, template: template};
     return 0;
 }
 
