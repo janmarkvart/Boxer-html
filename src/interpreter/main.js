@@ -188,174 +188,76 @@ function boxTemplateToggle(e)
 
 window.onclick = function(e) 
 {
-    let original_target = e.target;
-    if(original_target.nodeName != 'BOX-CODE' && original_target.nodeName != 'BOX-NAME'){return;}
-    let target = original_target;
-    while(target.nodeName != 'DOIT-BOX' && target.nodeName != 'DATA-BOX')
-    {
-        target = target.parentElement;
-    }
-    let box_id = target.id;
-    let was_user_template = false;
-    let previous_key = null;
-    if(target.nodeName == 'DATA-BOX')
-    {
-        //checks initial box name to see if box served as a user-defined template
-        let separated_id = box_id.split('_');
-        if(separated_id.length === 3 &&  separated_id[0] === "key" && separated_id[1].length === 1 
-            && separated_id[2] === "template" && target.nodeName == 'DATA-BOX')
-        {
-            //data-box was a template when we entered it
-            was_user_template = true;
-            previous_key = separated_id[1];
-        }
-    }
+    let target = e.target;
 
-    document.activeElement.addEventListener("blur", function onleave()
+    if(target.nodeName == 'BOX-NAME')
     {
         document.activeElement.spellcheck = false;
-        //check if box is template
-        let is_user_template = false;
-        let current_key = null;
-        let separated_new_id = original_target.innerText.split('_');
-        if(separated_new_id.length === 3 &&  separated_new_id[0] === "key" && separated_new_id[1].length === 1 
-            && separated_new_id[2] === "template" && target.nodeName == 'DATA-BOX') {is_user_template = true; current_key = separated_new_id[1];}
-
-        if(original_target.nodeName == 'BOX-NAME')
+        document.activeElement.addEventListener("blur", function onleave()
         {
-            //box-name serves as box id
-            target.id = original_target.innerText;
+            //box-name serves as box id (which is two level up)
+            target.parentElement.parentElement.id = target.innerText;
+        },{ once: true });//only triggers once, so no need to remove the listener manually
+    }
 
-            if(is_user_template == true)
-            {
-                if(previous_key != null && current_key != previous_key)
-                {
-                    //key changed, remove old template
-                    delete boxer_templates[previous_key];
-                }
-                //create new user-defined template
-                boxer_templates[current_key] = {tag_name: 'user_'+current_key, template: target.getElementsByTagName('BOX-CODE')[0].innerHTML};
-            }
-            else if(was_user_template == true)
-            {
-                //box no longer serves as a template
-                delete boxer_templates[previous_key];
-            }
-        }
-        if(original_target.nodeName == 'BOX-CODE')
-        {
-            if(was_user_template == true)
-            {
-                //box is a template, update its contents
-                boxer_templates[previous_key] = {tag_name: 'user_'+current_key, template: original_target.innerHTML};
-            }
-        }
-    },{ once: true });//only triggers once, so no need to remove the listener manually
-    if(original_target.nodeName == 'BOX-CODE')
+    if(target.nodeName != 'BOX-CODE') { return; }
+
+    document.activeElement.spellcheck = false;
+    document.activeElement.onkeyup = function(e)
     {
-        document.activeElement.onkeyup = function(e)
+        //detect whether user pressed a key which corresponds to a box template
+        let res = template_manager.tryGetTemplate(e.key);
+        if(res !== undefined)
         {
-            //detect whether user pressed a key which corresponds to a box template
-            let res = template_manager.tryGetTemplate(e.key);
-            if(res !== undefined)
+            let caret_node = document.getSelection().focusNode;
+            if(caret_node.parentElement.nodeName === 'BOX-NAME') { return; }
+            caret_node.nodeValue = caret_node.nodeValue.replaceAll(e.key, "");
+            caret_node.after(document.createRange().createContextualFragment(res.template));
+            //add events to header buttons
+            let newbox = caret_node.nextSibling;
+            if(newbox.nodeType != Node.ELEMENT_NODE) { newbox = newbox.nextSibling; }
+            templateEventAdder(newbox);
+            if(res.type === "original_template")
             {
-                let caret_node = document.getSelection().focusNode;
-                if(caret_node.parentElement.nodeName === 'BOX-NAME') { return; }
-                caret_node.nodeValue = caret_node.nodeValue.replaceAll(e.key, "");
-                caret_node.after(document.createRange().createContextualFragment(res.template));
-                //add events to header buttons
-                let newbox = caret_node.nextSibling;
-                if(newbox.nodeType != Node.ELEMENT_NODE) { newbox = newbox.nextSibling; }
-                templateEventAdder(newbox);
-                if(res.type === "original_template")
+                //one of default templates, place focus into newly added box's box-code for ease of use
+                let box_list = target.getElementsByTagName(res.tag_name);
+                let new_box = box_list[box_list.length -1];
+                if(res.tag_name != "box-code")
                 {
-                    //one of default templates, place focus into newly added box's box-code for ease of use
-                    let box_list = original_target.getElementsByTagName(res.tag_name);
-                    let new_box = box_list[box_list.length -1];
-                    if(res.tag_name != "box-code")
-                    {
-                        new_box = new_box.getElementsByTagName('box-code')[0];
-                    }
-                    let s = window.getSelection();
-                    let r = document.createRange();
-                    r.setStart(new_box, 1);
-                    r.setEnd(new_box, 1);
-                    s.removeAllRanges();
-                    s.addRange(r);
+                    new_box = new_box.getElementsByTagName('box-code')[0];
                 }
+                let s = window.getSelection();
+                let r = document.createRange();
+                r.setStart(new_box, 1);
+                r.setEnd(new_box, 1);
+                s.removeAllRanges();
+                s.addRange(r);
             }
         }
-        this.document.activeElement.onkeydown = function(e)
+    }
+    this.document.activeElement.onkeydown = function(e)
+    {
+        if( e.key === "Backspace" || e.key === "Delete")
         {
-            if( e.key === "Backspace" || e.key === "Delete")
-            {
-                //prevent undesirable autodeletion of html elements if: 
-                // we are at the beginning of a text node 
-                // + selected text area is first in box-code or after a doit-box/data-box
-                // (nested standalone box-code is still able to be auto-deleted - intended behavior)
-                let caret_position = document.getSelection();
-                if(caret_position.anchorOffset <= 1 
-                    && caret_position.anchorNode.parentElement.parentElement.nodeName != 'BOX-CODE'
-                    && (
+            //prevent undesirable autodeletion of html elements if: 
+            // we are at the beginning of a text node 
+            // + selected text area is first in box-code or after a doit-box/data-box
+            // (nested standalone box-code is still able to be auto-deleted - intended behavior)
+            let caret_position = document.getSelection();
+            if(caret_position.anchorOffset <= 1 
+                && caret_position.anchorNode.parentElement.parentElement.nodeName != 'BOX-CODE'
+                &&  (
                         caret_position.anchorNode.parentElement.childNodes[0] == caret_position.anchorNode 
                         || caret_position.anchorNode.previousSibling.nodeName == 'DOIT-BOX' 
-                        || caret_position.anchorNode.previousSibling.nodeName == 'DATA-BOX')
-                    )//what a beauty!
-                {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-            }
-        }
-    }
-}
-
-function insertBox(original_target, key)
-{
-    //inserts a new box into the program, based on the key pressed
-    let box_template = boxer_templates[key];
-    templateInserter(original_target, key, box_template.template);
-    
-    if(key == "[" || key == "]" || key == "{")
-    {
-        //one of default templates, place focus into newly added box's box-code for ease of use
-        let box_list = original_target.getElementsByTagName(box_template.tag_name);
-        let new_box = box_list[box_list.length -1];
-        if(box_template.tag_name != "box-code")
-        {
-            new_box = new_box.getElementsByTagName('box-code')[0];
-        }
-        let s = window.getSelection();
-        let r = document.createRange();
-        r.setStart(new_box, 1);
-        r.setEnd(new_box, 1);
-        s.removeAllRanges();
-        s.addRange(r);
-    }
-}
-
-function templateInserter(current_target, key, template)
-{
-    //recursively traverses the target element and replaces all text occurences of key with corresponding templates,
-    // whilst skipping any box-name elements, preventing self-replacement of templates
-    current_target.childNodes.forEach(child => {
-        if(child.nodeType == Node.TEXT_NODE)
-        {
-            if(child.data.indexOf(key) >= 0)
+                        || caret_position.anchorNode.previousSibling.nodeName == 'DATA-BOX'
+                    )
+                )//what a beauty!
             {
-                child.data = child.data.replaceAll(key, "");
-                child.after(document.createRange().createContextualFragment(template));
-                //add event listeners
-                let newbox = child.nextSibling;
-                if(newbox.nodeType != Node.ELEMENT_NODE) { newbox = newbox.nextSibling; }
-                templateEventAdder(newbox);
+                e.preventDefault();
+                e.stopPropagation();
             }
         }
-        if(child.nodeName == 'DATA-BOX' || child.nodeName == 'DOIT-BOX')
-        {
-            templateInserter(child.getElementsByTagName('BOX-CODE')[0], key, template);
-        }
-    });
+    }
 }
 
 function templateEventAdder(newbox)

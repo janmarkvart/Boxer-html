@@ -58,7 +58,7 @@ function tryAddTemplate(key, template) {
     if(key.length != 1)        { return -3; } //key must be 1 char long to be easily invoked by typing
 
     template = template.replaceAll(nbspc, "");
-    boxer_templates[key] = {type: "user_template", tag_name: "user_"+key, template: template};
+    user_templates[key] = {type: "user_template", tag_name: "user_"+key, template: template};
     return 0;
 }
 
