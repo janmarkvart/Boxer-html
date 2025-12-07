@@ -143,6 +143,7 @@ function boxHeaderDelete(e)
     {
         target = target.parentElement;
     }
+    //TODO: when remove() also remove the corresponding template
     if( confirm("Are you sure you want to delete this box?") == true) { target.remove(); }
 }
 function boxTemplateToggle(e)

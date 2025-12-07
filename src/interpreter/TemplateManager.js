@@ -70,7 +70,7 @@ function tryGetTemplate(key) {
     if(key in boxer_templates) {
         return boxer_templates[key];
     }
-    return user_templates[key];
+    return user_templates[key];//TODO: comment behavior in thesis text
 }
 
 export default template_api;
