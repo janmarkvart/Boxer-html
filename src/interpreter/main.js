@@ -124,7 +124,7 @@ function boxHeaderShowHide(e)
     }
     let target_hide_button = target.getElementsByClassName("boxcode-hide")[0];
     target = target.getElementsByTagName('BOX-CODE')[0];
-    if (target.style.display === "none") 
+    if(target.style.display === "none") 
     {
         target.style.display = "inline-block";
         target_hide_button.innerText = "hide";
@@ -143,8 +143,14 @@ function boxHeaderDelete(e)
     {
         target = target.parentElement;
     }
-    //TODO: when remove() also remove the corresponding template
-    if( confirm("Are you sure you want to delete this box?") == true) { target.remove(); }
+    if(confirm("Are you sure you want to delete this box?") == true) 
+    {
+        //when remove() also remove the corresponding template
+        let box_id = target.id.substring(1);
+        template_manager.removeTemplate(box_id);
+
+        target.remove();
+    }
 }
 function boxTemplateToggle(e)
 {
