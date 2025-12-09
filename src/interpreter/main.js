@@ -116,7 +116,7 @@ function boxTemplateToggle(e)
         target = target.parentElement;
     }
     let box_id = target.id.substring(1);
-    let template_contents = target.getElementsByTagName('BOX-CODE')[0].innerHTML;
+    let template_code = target.getElementsByTagName('BOX-CODE')[0];
 
     if(target.classList.contains('activetemplate'))
     {
@@ -127,7 +127,7 @@ function boxTemplateToggle(e)
         return;
     }
 
-    let res = template_manager.tryAddTemplate(box_id, template_contents);
+    let res = template_manager.tryAddTemplate(box_id, template_code);
     switch (res) {
         case -1:
             alert( "Could not create template: default templates cannot be overriden!" );
@@ -175,14 +175,22 @@ window.onclick = function(e)
             let caret_node = document.getSelection().focusNode;
             if(caret_node.parentElement.nodeName === 'BOX-NAME') { return; }
             caret_node.nodeValue = caret_node.nodeValue.replaceAll(e.key, "");
-            caret_node.after(document.createRange().createContextualFragment(res.template));
-            //add events to header buttons
-            let newbox = caret_node.nextSibling;
-            if(newbox.nodeType != Node.ELEMENT_NODE) { newbox = newbox.nextSibling; }
-            templateEventAdder(newbox);
+
+            let res_code = res.template;
+            //user templates are saved as a link a the html node, so we need to extract its contents:
+            if(res.type === "user_template") { res_code = res_code.innerHTML; }
+
+            let fragment = document.createRange().createContextualFragment(res_code);
+            //add events to header buttons if any are present
+            for(let item of fragment.children)
+            {
+                if(item.nodeType === Node.ELEMENT_NODE) { templateEventAdder(item); }
+            }
+            caret_node.after(fragment);
+
+            //on default templates, place focus into newly added box's box-code for ease of use
             if(res.type === "original_template")
             {
-                //one of default templates, place focus into newly added box's box-code for ease of use
                 let box_list = target.getElementsByTagName(res.tag_name);
                 let new_box = box_list[box_list.length -1];
                 if(res.tag_name != "box-code")

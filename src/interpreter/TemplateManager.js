@@ -40,7 +40,7 @@ var databox_template =
 </div>
 </div>
 <box-code contenteditable=true>&#8203 </box-code>
-</data-box>&#8203 
+</data-box>&#8203
 <br>
 `
 
@@ -52,13 +52,12 @@ var boxer_templates = { //default templates provided by boxer-HTML
 
 var user_templates = {}
 
-function tryAddTemplate(key, template) {
+function tryAddTemplate(key, link) {
     if(key in boxer_templates) { return -1; } //tried to override default template
     if(key in user_templates)  { return -2; } //tried to override already existing user template
     if(key.length != 1)        { return -3; } //key must be 1 char long to be easily invoked by typing
 
-    template = template.replaceAll(nbspc, "");
-    user_templates[key] = {type: "user_template", tag_name: "user_"+key, template: template};
+    user_templates[key] = {type: "user_template", tag_name: "user_"+key, template: link};
     return 0;
 }
 
