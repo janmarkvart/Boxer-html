@@ -25,7 +25,6 @@
                 <br>
                 left 1
             </box-code>
-            <br>
         </box-code>
     </doit-box>
     <doit-box id="arcright">
@@ -46,7 +45,6 @@
                 <br>
                 right 1
             </box-code>
-            <br>
         </box-code>
     </doit-box>
     <doit-box id="draw_sun">
@@ -60,7 +58,6 @@
         </div>
         <box-code contenteditable=true>
             sun 0.7
-            <br>
         </box-code>
     </doit-box>
     <br>
@@ -76,25 +73,24 @@
         <box-code contenteditable=true>
             input r
             <br>
-                <doit-box id="ray">
-                    <div class="box-header">
-                        <box-name contenteditable=true>ray</box-name>
-                        <div class="header-right">
-                            <button class="boxcode-hide">hide</button>
-                            <button class="doit-execute">run</button>
-                            <button class="deletebox">delete</button>
-                        </div>
+            <doit-box id="ray">
+                <div class="box-header">
+                    <box-name contenteditable=true>ray</box-name>
+                    <div class="header-right">
+                        <button class="boxcode-hide">hide</button>
+                        <button class="doit-execute">run</button>
+                        <button class="deletebox">delete</button>
                     </div>
-                    <box-code contenteditable=true>
-                        repeat 2
-                        <box-code>
-                            arcleft r 90
-                            <br>
-                            arcright r 90
-                        </box-code>
+                </div>
+                <box-code contenteditable=true>
+                    repeat 2
+                    <box-code>
+                        arcleft r 90
                         <br>
+                        arcright r 90
                     </box-code>
-                </doit-box>
+                </box-code>
+            </doit-box>
             <br>
             repeat 9
             <box-code>
@@ -102,7 +98,6 @@
                 <br>
                 right 160
             </box-code>
-            <br>
         </box-code>
     </doit-box>
     <canvas id="main-canvas" width="250" height="250"></canvas>
