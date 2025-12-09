@@ -1,13 +1,60 @@
 //--------------------------------------------------------------------------------
     // Generic tokenizer: splits raw data into individual operations
-    // (=> also removes whitespace characters used for editing stability)
+    // (=> also trims whitespace characters used for editing stability)
 //--------------------------------------------------------------------------------
 
 function BoxerTokenizer(caller_box)
 {
     let tokens = [];
+    let current_token = [];
 
-    //...
+    let box_code;
+    if(caller_box.nodeName == "DOIT-BOX" || caller_box.nodeName == "DATA-BOX")
+    {
+        box_code = caller_box.getElementsByTagName('BOX-CODE')[0].childNodes;
+    }
+    else
+    {
+        box_code = caller_box.childNodes;
+    }
+
+    for(let i = 0; i < box_code.length; i++)
+    {
+        let child = box_code[i];
+        if(child.nodeType == Node.TEXT_NODE)
+        {
+            let trimmed = child.data.trim();
+            if(trimmed == "") {continue;}
+            let words = trimmed.split(/\s+/);//split by whitespace
+            for(let j = 0; j < words.length; j++)
+            {
+                current_token.push(words[j]);
+            }
+        }
+        if(child.nodeType == Node.ELEMENT_NODE)
+        {
+            if(child.nodeName == "BR" && current_token.length != 0)
+            {
+                //<BR> works as a universal separator between operations
+                tokens.push(current_token);
+                current_token = [];
+            }
+            //TODO: should be this simple?
+            if(child.nodeName == "BOX-CODE")
+            {
+                current_token.push(child);
+            }
+            if(child.nodeName == "DOIT-BOX")
+            {
+                current_token.push(child);
+            }
+            if(child.nodeName == "DATA-BOX")
+            {
+                current_token.push(child);
+            }
+        }
+    }
+    if(current_token.length > 0) { tokens.push(current_token); }
 
     return tokens;
 }
@@ -112,10 +159,11 @@ class BoxerExecutor
 
 function BoxerEvaluator(variables, caller_box)
 {
-    let res = BoxerParser(caller_box);
-    let sorted_res = BoxerTokenSorter(res);
-    let executor = BoxerExecutor(sorted_res, variables);
-    executor.Execute();
+    let tokens = BoxerTokenizer(caller_box);
+    console.log(tokens);
+    //let sorted_tokens = BoxerTokenSorter(tokens);
+    //let executor = BoxerExecutor(sorted_tokens, variables);
+    //executor.Execute();
 }
 
 export default BoxerEvaluator
