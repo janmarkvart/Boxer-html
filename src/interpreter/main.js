@@ -14,50 +14,6 @@ var primitives = {
     "log": {function: log, argcount: 1, needs_variables: false}
 };
 
-var boxcode_template = 
-`
-<box-code contenteditable=true> </box-code>
-<br>
-`;
-
-var doitbox_template = 
-`
-<doit-box id="newdoitbox">
-<div class="box-header">
-<box-name>&#8203newdoitbox</box-name>
-<div class="header-right" contenteditable="false">
-<button class="boxcode-hide">hide</button>
-<button class="doit-execute">run</button>
-<button class="deletebox">delete</button>
-</div>
-</div>
-<box-code contenteditable=true>&#8203 </box-code>
-</doit-box>&#8203
-<br>
-`;
-
-var databox_template = 
-`
-<data-box id="newdatabox">
-<div class="box-header">
-<box-name>&#8203newdatabox</box-name>
-<div class="header-right" contenteditable="false">
-<button class="boxcode-hide">hide</button>
-<button class="templatebox">template</button>
-<button class="deletebox">delete</button>
-</div>
-</div>
-<box-code contenteditable=true>&#8203 </box-code>
-</data-box>&#8203 
-<br>
-`
-
-var boxer_templates = {
-    "[": {tag_name : "box-code", template: boxcode_template},
-    "]": {tag_name : "doit-box", template: doitbox_template},
-    "{": {tag_name : "data-box", template: databox_template}
-}
-
 window.onload = function() 
 {
     //prepare canvas to be callable by boxer functions
