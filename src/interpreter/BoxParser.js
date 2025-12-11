@@ -23,7 +23,7 @@ function parseBox(caller_box)
         let child = box_code[i];
         if(child.nodeType == Node.TEXT_NODE)
         {
-            let trimmed = child.data.trim();
+            let trimmed = child.data.replace(/\u200B/g,'').trim();
             if(trimmed == "") {continue;}
             let words = trimmed.split(/\s+/);//split by whitespace
             let idx = 0;
