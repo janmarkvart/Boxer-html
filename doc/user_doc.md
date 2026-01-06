@@ -16,7 +16,7 @@ This world box contains a header bar with its name, and three control buttons. T
 
 ### Expanding the Program
 
-To start writing new code, click into the green box code section inside `world` and begin typing operations. The user can also use one of the prepared shortcuts to expand the program with new boxes. Keep in mind that currently, holding the backspace can irreversibly destroy parts of a nested box. This can be reversed using the `Ctrl+Z` shortcut.
+To start writing new code, click into the green box code section inside `world` and begin typing operations. The user can also use one of the prepared shortcuts to expand the program with new boxes.
 
 #### Templates
 
@@ -42,8 +42,15 @@ The standalone box-code serves as a way to create a variation of doit-box which,
 
 ##### Custom Templates
 
-In addition to the three default templates, the user has the ability to create their own templates. The creation process involves creating a data-box, with its contents serving as the contents of the template. This data-box then has to be named following the `key_X_template` format, with `X` being a single character. To remove a custom template, the user only needs to change the name again, to one which does not follow the format.
-In the image below, we can see an example of a template being used. by clicking into `BoxBefore` a typing `8`, the template contents are copied in. The result can be seen in `BoxAfter`.
+In addition to the three default templates, the user has the ability to create their own templates. The creation process involves creating a standard data-box, with its contents serving as the contents of the template. This data-box can then be activated using the `template` header button. After checking whether the box-name is 1 character long (to be invokable by a keyboard press), as well as if the selected key isn't already used for another template, the new template is created and ready for use. 
+During the duration of a template being active, its name cannot be modified to prevent an invalid state. Its code can, hovewer be further modified, and any such changes will be immediately reflected in the next invocation of the template.
+To remove a custom template, the user only needs to click the `template` header button again.
+
+In the image below, we can see an example of a template being used. 
+
+
+
+Once the new template is active, and by clicking into `BoxBefore` a typing `8`, the template contents are copied in. The result can be seen in `BoxAfter`.
 
 ![](./img/templateCustom.png)
 

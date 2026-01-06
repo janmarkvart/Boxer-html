@@ -1,6 +1,7 @@
 import parseBox from "./BoxParser.js";
 import turtle_api from "./TurtleGraphics.js";
 import template_manager from "./TemplateManager.js";
+import BoxerEvaluator from "./BoxEvaluator.js";
 
 //--------------------------------------------------------------------------------
     // Initial Setup and canvas preparation
@@ -8,10 +9,13 @@ import template_manager from "./TemplateManager.js";
 
 var primitives = {
     "forward": {function: forward, argcount: 1, needs_variables: false},
+//    "forward": {function: turtle_api.forward, argcount: 1, needs_variables: false},
     "skip":  {function: skip, argcount: 1, needs_variables: false},
     "left": {function: left, argcount: 1, needs_variables: false},
     "right": {function: right, argcount: 1, needs_variables: false},
-    "log": {function: log, argcount: 1, needs_variables: false}
+    "log": {function: log, argcount: 1, needs_variables: false},
+    //repeat: {function: repeat, argcount: 2, needs_variables: false},
+    //-if it returns operation{operation, arguments}[] splice it into existing operations
 };
 
 window.onload = function() 
@@ -69,6 +73,8 @@ function boxHeaderRun(e)
         next: null
     }
     interpretBox(initial_variable, target);
+    console.log("new:");
+    BoxerEvaluator(initial_variable, target);
 }
 function boxHeaderShowHide(e) 
 {
@@ -276,6 +282,7 @@ function interpretBox(variables, caller_box)
 {
     //interpretation of the original caller box
     let operations = parseBox(caller_box);
+    console.log(operations);
     evalBox(operations, variables);
 }
 

@@ -7,6 +7,8 @@ var turtle_api = {
     updateposition
 }
 
+//TODO: rewrite updatePosition into separate primitives, then importPrimitives gives them to BoxEvaluator.js (pseudocode in main is only to show how it will look)
+
 function setup(canvas_id)
 {
     canvas_pointer = document.getElementById(canvas_id);

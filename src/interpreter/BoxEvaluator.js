@@ -3,6 +3,10 @@
     // (=> also trims whitespace characters used for editing stability)
 //--------------------------------------------------------------------------------
 
+import turtle_api from "./TurtleGraphics.js";
+import "./IO.js";
+import control_flow_api from "./ControlFlow.js";
+
 function BoxerTokenizer(caller_box)
 {
     let tokens = [];
@@ -69,14 +73,30 @@ function BoxerTokenSorter(tokens)
     let operations = [];
     let variables = [];
     let nested_doits = [];
+    let parsers = BoxerOperationParser.derived_parsers;
     tokens.forEach(token => {
         //calls individual operation Parsers, depending on which one succeeds->sorts into categories
         //could we treat new_var/nested_doit as special cases or include them in generic operation parsers?
-        //->NO, just as any other parser
+        //->NO, just as any other parser and handle them in switch
+        parsers.forEach(parser => {
+            let res = parser.prototype.parse(token);
+            if(res === null) { console.log("nope"); return; }
+            switch (res.operation) {
+                case "new_var":
+                    variables.push(res);
+                    break;
+                case "nested_doit":
+                    nested_doits.push(res);
+                    break;
+                default:
+                    operations.push(res);
+                    break;
+            }
+        });
     });
 
     let sorted_tokens = variables.concat(nested_doits, operations);
-    return sorted_operations;
+    return sorted_tokens;
 }
 
 //--------------------------------------------------------------------------------
@@ -86,38 +106,77 @@ function BoxerTokenSorter(tokens)
 class BoxerOperationParser 
 {
     static derived_parsers = new Set();
-    parse() {}
+    parse(token) {}
 }
 
-//new parser created afterwars here will not break anything -> priority of var>doit>ops is handled in BoxerTokenSorter
-
-//new_var
-
-class BoxerForwardParser extends BoxerOperationParser 
+class BoxerNewVarParser extends BoxerOperationParser 
 {
 
     static new_parser = BoxerOperationParser.derived_parsers.add(this);
-    parse() 
+    parse(token) 
     {
-        //checks if argcount > 1 (this is ok to do here)
-        // & first is a number (this is not something we can check here!(can be variable name) do it in execution instead)
+        //checks if name is matching this parser + argcount > 1 
         // (additional args ignored)
+        if(token.length > 1 && token[0] instanceof HTMLElement && token[0].nodeName === "DATA-BOX") 
+        {
+            return {
+                operation: "new_var",
+                operands: [token[1]]
+            }
+        }
+        return null;
+    }
+}
+
+class BoxerNestedDoitParser extends BoxerOperationParser 
+{
+
+    static new_parser = BoxerOperationParser.derived_parsers.add(this);
+    parse(token) 
+    {
+        //checks if name is matching this parser + argcount > 1 
+        // (additional args ignored)
+        if(token.length > 1 && token[0] instanceof HTMLElement && token[0].nodeName === "DOIT-BOX") 
+        {
+            return {
+                operation: "nested_doit",
+                operands: [token[1]]
+            }
+        }
+        return null;
     }
 }
 
 class BoxerRepeatParser extends BoxerOperationParser 
 {
     static new_parser = BoxerOperationParser.derived_parsers.add(this);
-    parse() 
+    parse(token) 
     {
         //checks if argcount > 2 (this is ok to do here)
         // & first is a number (this is not something we can check here!(can be variable name) do it in execution instead)
         // & second is a box-code/doit-box(->grab its box-code) (this is not something we can check here!(can be variable name) do it in execution instead)
         // (additional args ignored)
+        return null;
     }    
 }
 
-
+class BoxerLogParser extends BoxerOperationParser 
+{
+    static new_parser = BoxerOperationParser.derived_parsers.add(this);
+    parse(token) 
+    {
+        //checks if name is matching this parser + argcount > 1 
+        // (additional args ignored)
+        if(token.length > 1 && typeof(token[0]) === "string" && token[0] === "log") 
+        {
+            return {
+                operation: "log",
+                operands: [token[1]]
+            }
+        }
+        return null;
+    }
+}
 
 //--------------------------------------------------------------------------------
     // Parsed operations execution
@@ -125,6 +184,9 @@ class BoxerRepeatParser extends BoxerOperationParser
 
 class BoxerExecutor
 {
+    //list of primitives with their corresponding parsers
+    #primitives = [];
+
     // variable TTL: counter that increments on copy&execute call 
     #NestingCounter = 0;
 
@@ -145,11 +207,55 @@ class BoxerExecutor
         //constructor
         this.#operations = ops;
         this.#variables = vars;
+
+        //import all primitives from their respective files:
+        this.#primitives.append(turtle_api.importPrimitives());
+        this.#primitives.append(IO_api.importPrimitives());
+        this.#primitives.append(control_flow_api.importPrimitives());
+        //-||- IO(input,change,log), new_var/nested_doit also IO
+        //-||- ControlFlow(if,for,repeat) 
+        // - treat all of the as old primitives handling, their specifics handled in files/through return type (see Execute())
     }
 
     Execute() 
     {
-        // iterate operations + extend it same as before
+        let processed_op_idx = 0;
+        while(processed_op_idx < operations.length)
+        {
+            let op = operations[processed_op_idx];
+            processed_op_idx++;
+            let call = primitives[op.operation];
+            if(call != null)
+            {
+                if(call.needs_variables == true)
+                {
+                    op.operands.unshift(variables);
+                }
+                let res = call.function.apply(call.function, op.operands);
+                //TODO: check for return variables or new set of operations to splice
+                switch (res.return_type) {
+                    case "variables":
+                        this.#variables = res.return_value;
+                        break;
+                    case "operations":
+                        this.#operations.splice(processed_op_idx, 0, ...res.return_value);
+                        break;
+                    default:
+                        break;
+                }
+                continue;
+            }
+        }
+        // iterate primitives
+        // - if returns new operations[], splice them wherever we are (same splice as before basically)
+
+        //example: repeat
+        // "repeat": {function: repeat, argcount: 2, needs_variables: false},
+        //      - repeat function imported from COntrolFlow.js
+        //      - argcount may be redundant (already checked in parsing), not sure rn check impl
+        //      - needs variables same as before
+        //      - return type: can return operation[] or nothing (no other cases should exist rn, errors handled in resp. files)
+        //          - determine operation[] by checking if first has operation+operands
     }
 }
 
@@ -161,7 +267,8 @@ function BoxerEvaluator(variables, caller_box)
 {
     let tokens = BoxerTokenizer(caller_box);
     console.log(tokens);
-    //let sorted_tokens = BoxerTokenSorter(tokens);
+    let sorted_tokens = BoxerTokenSorter(tokens);
+    console.log(sorted_tokens);
     //let executor = BoxerExecutor(sorted_tokens, variables);
     //executor.Execute();
 }
