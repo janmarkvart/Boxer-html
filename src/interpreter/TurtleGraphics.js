@@ -7,6 +7,42 @@ var turtle_api = {
     updateposition
 }
 
+var turple_primitives = {
+    "forward" : {function: TG_forward, needs_variables: false },
+    "skip" : {function: TG_skip, needs_variables: false },
+    "left" : {function: TG_left, needs_variables: false },
+    "right" : {function: TG_right, needs_variables: false }
+}
+
+export function importPrimitives()
+{
+    return turple_primitives;
+}
+
+export function TG_forward(distance)
+{
+    turtle_position.x += Math.sin(turtle_position.rotation/180*Math.PI) * distance;
+    turtle_position.y += Math.cos(turtle_position.rotation/180*Math.PI) * distance;
+    canvas_draw(true);
+}   
+
+export function TG_skip(distance)
+{
+    turtle_position.x += Math.sin(turtle_position.rotation/180*Math.PI) * distance;
+    turtle_position.y += Math.cos(turtle_position.rotation/180*Math.PI) * distance;
+    canvas_draw(false);
+}
+
+export function TG_left (degrees)
+{
+    turtle_position.rotation = (turtle_position.rotation + degrees)%360;
+}
+
+export function TG_right (degrees)
+{
+    turtle_position.rotation = (turtle_position.rotation - degrees)%360;
+}
+
 //TODO: rewrite updatePosition into separate primitives, then importPrimitives gives them to BoxEvaluator.js (pseudocode in main is only to show how it will look)
 
 function setup(canvas_id)

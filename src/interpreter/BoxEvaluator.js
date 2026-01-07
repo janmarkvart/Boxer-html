@@ -3,9 +3,9 @@
     // (=> also trims whitespace characters used for editing stability)
 //--------------------------------------------------------------------------------
 
-import turtle_api from "./TurtleGraphics.js";
+import * as TG_api from "./TurtleGraphics.js";
 import * as IO_api from "./IO.js";
-import control_flow_api from "./ControlFlow.js";
+import * as CF_api from "./ControlFlow.js";
 
 function BoxerTokenizer(caller_box)
 {
@@ -291,10 +291,12 @@ class BoxerExecutor
         this.#variables = vars;
 
         //import all primitives from their respective files:
-        //this.#primitives.append(turtle_api.importPrimitives());
+        let tgop = TG_api.importPrimitives();
+        Object.assign(this.#primitives, tgop);
         let iop = IO_api.importPrimitives();
         Object.assign(this.#primitives, iop);
-        //this.#primitives.append(control_flow_api.importPrimitives());
+        let cfop = CF_api.importPrimitives();
+        Object.assign(this.#primitives, cfop);
         //-||- IO(input,change,log), new_var/nested_doit also IO
         //-||- ControlFlow(if,for,repeat) 
         // - treat all of the as old primitives handling, their specifics handled in files/through return type (see Execute())
