@@ -43,7 +43,7 @@ export function IO_new_var(variables/*,...*/)
 
 export function IO_nested_doit(variables/*,...*/)
 {
-    //modifies variables
+    variables = addNewVariable
     return variables;
 }
 
@@ -92,7 +92,7 @@ function createComplexVariable(addition)
         }
         else 
         {
-            //even more complex variable!
+            //recursion for more complex variables
             variable.push({
                 name: elem.operands[0],
                 value: createComplexVariable(elem.operands[1])

@@ -23,7 +23,7 @@ var doitbox_template =
 <button class="deletebox">delete</button>
 </div>
 </div>
-<box-code contenteditable=true>&#8203 </box-code>
+<box-code contenteditable=true>&#8203<br></box-code>
 </doit-box>&#8203
 <br>
 `;
@@ -39,7 +39,7 @@ var databox_template =
 <button class="deletebox">delete</button>
 </div>
 </div>
-<box-code contenteditable=true>&#8203 </box-code>
+<box-code contenteditable=true>&#8203<br></box-code>
 </data-box>&#8203
 <br>
 `
