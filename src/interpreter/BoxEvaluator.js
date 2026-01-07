@@ -43,7 +43,6 @@ function BoxerTokenizer(caller_box)
                 tokens.push(current_token);
                 current_token = [];
             }
-            //TODO: should be this simple?
             if(child.nodeName == "BOX-CODE")
             {
                 current_token.push(child);
@@ -76,8 +75,8 @@ function BoxerTokenSorter(tokens)
     let parsers = BoxerOperationParser.derived_parsers;
     tokens.forEach(token => {
         //calls individual operation Parsers, depending on which one succeeds->sorts into categories
-        //could we treat new_var/nested_doit as special cases or include them in generic operation parsers?
-        //->NO, just as any other parser and handle them in switch
+        //new_var has absolute ordering priority to ensure variables are ready for use in other operations,
+        //followed by nested_doit boxes, followed by primitive operations
         parsers.forEach(parser => {
             let res = parser.prototype.parse(token);
             if(res === null) { console.log("nope"); return; }
@@ -108,6 +107,10 @@ class BoxerOperationParser
     static derived_parsers = new Set();
     parse(token) {}
 }
+
+//----------------------------------------------
+    // Parsers for IO operations
+//----------------------------------------------
 
 class BoxerNewVarParser extends BoxerOperationParser 
 {
@@ -147,19 +150,6 @@ class BoxerNestedDoitParser extends BoxerOperationParser
     }
 }
 
-class BoxerRepeatParser extends BoxerOperationParser 
-{
-    static new_parser = BoxerOperationParser.derived_parsers.add(this);
-    parse(token) 
-    {
-        //checks if argcount > 2 (this is ok to do here)
-        // & first is a number (this is not something we can check here!(can be variable name) do it in execution instead)
-        // & second is a box-code/doit-box(->grab its box-code) (this is not something we can check here!(can be variable name) do it in execution instead)
-        // (additional args ignored)
-        return null;
-    }    
-}
-
 class BoxerLogParser extends BoxerOperationParser 
 {
     static new_parser = BoxerOperationParser.derived_parsers.add(this);
@@ -176,6 +166,99 @@ class BoxerLogParser extends BoxerOperationParser
         }
         return null;
     }
+}
+
+//----------------------------------------------
+    // Parsers for Turtle graphics operations
+//----------------------------------------------
+
+class BoxerForwardParser extends BoxerOperationParser 
+{
+    static new_parser = BoxerOperationParser.derived_parsers.add(this);
+    parse(token) 
+    {
+        //checks if name is matching this parser + argcount > 1 
+        // (additional args ignored)
+        if(token.length > 1 && typeof(token[0]) === "string" && token[0] === "forward") 
+        {
+            return {
+                operation: "forward",
+                operands: [token[1]]
+            }
+        }
+        return null;
+    }    
+}
+
+class BoxerSkipParser extends BoxerOperationParser 
+{
+    static new_parser = BoxerOperationParser.derived_parsers.add(this);
+    parse(token) 
+    {
+        //checks if name is matching this parser + argcount > 1 
+        // (additional args ignored)
+        if(token.length > 1 && typeof(token[0]) === "string" && token[0] === "skip") 
+        {
+            return {
+                operation: "skip",
+                operands: [token[1]]
+            }
+        }
+        return null;
+    }    
+}
+
+class BoxerLeftParser extends BoxerOperationParser 
+{
+    static new_parser = BoxerOperationParser.derived_parsers.add(this);
+    parse(token) 
+    {
+        //checks if name is matching this parser + argcount > 1 
+        // (additional args ignored)
+        if(token.length > 1 && typeof(token[0]) === "string" && token[0] === "left") 
+        {
+            return {
+                operation: "left",
+                operands: [token[1]]
+            }
+        }
+        return null;
+    }    
+}
+
+class BoxerRightParser extends BoxerOperationParser 
+{
+    static new_parser = BoxerOperationParser.derived_parsers.add(this);
+    parse(token) 
+    {
+        //checks if name is matching this parser + argcount > 1 
+        // (additional args ignored)
+        if(token.length > 1 && typeof(token[0]) === "string" && token[0] === "right") 
+        {
+            return {
+                operation: "right",
+                operands: [token[1]]
+            }
+        }
+        return null;
+    }    
+}
+
+//----------------------------------------------
+    // Parsers for Control flow operations
+//----------------------------------------------
+
+class BoxerRepeatParser extends BoxerOperationParser 
+{
+    static new_parser = BoxerOperationParser.derived_parsers.add(this);
+    parse(token) 
+    {
+        //checks if argcount > 2 (this is ok to do here)
+        // & first is a number (this is not something we can check here!(can be variable name) do it in execution instead)
+        // & second is a box-code/doit-box(->grab its box-code) (this is not something we can check here!(can be variable name) do it in execution instead)
+        // (additional args ignored)
+        return null;
+    }    
 }
 
 //--------------------------------------------------------------------------------
