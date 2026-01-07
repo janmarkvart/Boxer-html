@@ -139,4 +139,266 @@ function parseBox(caller_box)
     return all_operations;
 }
 
+function BoxerTokenizer(caller_box)
+{
+    let tokens = [];
+    let current_token = [];
+
+    let box_code;
+    if(caller_box.nodeName == "DOIT-BOX" || caller_box.nodeName == "DATA-BOX")
+    {
+        box_code = caller_box.getElementsByTagName('BOX-CODE')[0].childNodes;
+    }
+    else
+    {
+        box_code = caller_box.childNodes;
+    }
+
+    for(let i = 0; i < box_code.length; i++)
+    {
+        let child = box_code[i];
+        if(child.nodeType == Node.TEXT_NODE)
+        {
+            let trimmed = child.data.trim();
+            if(trimmed == "") {continue;}
+            let words = trimmed.split(/\s+/);//split by whitespace
+            for(let j = 0; j < words.length; j++)
+            {
+                current_token.push(words[j]);
+            }
+        }
+        if(child.nodeType == Node.ELEMENT_NODE)
+        {
+            if(child.nodeName == "BR" && current_token.length != 0)
+            {
+                //<BR> works as a universal separator between operations
+                tokens.push(current_token);
+                current_token = [];
+            }
+            if(child.nodeName == "BOX-CODE")
+            {
+                current_token.push(child);
+            }
+            if(child.nodeName == "DOIT-BOX")
+            {
+                current_token.push(child);
+            }
+            if(child.nodeName == "DATA-BOX")
+            {
+                current_token.push(child);
+            }
+        }
+    }
+    if(current_token.length > 0) { tokens.push(current_token); }
+
+    return tokens;
+}
+
+//--------------------------------------------------------------------------------
+    // Generic token sorter: sorts (parsed)tokens by priority 
+    // (variables > nested_doits > operations)
+//--------------------------------------------------------------------------------
+
+function BoxerTokenSorter(tokens)
+{
+    let operations = [];
+    let variables = [];
+    let nested_doits = [];
+    let parsers = BoxerOperationParser.derived_parsers;
+    tokens.forEach(token => {
+        //calls individual operation Parsers, depending on which one succeeds->sorts into categories
+        //new_var has absolute ordering priority to ensure variables are ready for use in other operations,
+        //followed by nested_doit boxes, followed by primitive operations
+        parsers.forEach(parser => {
+            let res = parser.prototype.parse(token);
+            if(res === null) { console.log("nope"); return; }
+            switch (res.operation) {
+                case "new_var":
+                    variables.push(res);
+                    break;
+                case "nested_doit":
+                    nested_doits.push(res);
+                    break;
+                default:
+                    operations.push(res);
+                    break;
+            }
+        });
+    });
+
+    let sorted_tokens = variables.concat(nested_doits, operations);
+    return sorted_tokens;
+}
+
+//--------------------------------------------------------------------------------
+    // Parsers for individual operations
+//--------------------------------------------------------------------------------
+
+class BoxerOperationParser 
+{
+    static derived_parsers = new Set();
+    parse(token) {}
+}
+
+//----------------------------------------------
+    // Parsers for IO operations
+//----------------------------------------------
+
+class BoxerNewVarParser extends BoxerOperationParser 
+{
+
+    static new_parser = BoxerOperationParser.derived_parsers.add(this);
+    parse(token) 
+    {
+        //checks if name is matching this parser + argcount > 1 
+        // (additional args ignored)
+        if(token.length > 1 && token[0] instanceof HTMLElement && token[0].nodeName === "DATA-BOX") 
+        {
+            return {
+                operation: "new_var",
+                operands: [token[1]]
+            }
+        }
+        return null;
+    }
+}
+
+class BoxerNestedDoitParser extends BoxerOperationParser 
+{
+
+    static new_parser = BoxerOperationParser.derived_parsers.add(this);
+    parse(token) 
+    {
+        //checks if name is matching this parser + argcount > 1 
+        // (additional args ignored)
+        if(token.length > 1 && token[0] instanceof HTMLElement && token[0].nodeName === "DOIT-BOX") 
+        {
+            return {
+                operation: "nested_doit",
+                operands: [token[1]]
+            }
+        }
+        return null;
+    }
+}
+
+class BoxerLogParser extends BoxerOperationParser 
+{
+    static new_parser = BoxerOperationParser.derived_parsers.add(this);
+    parse(token) 
+    {
+        //checks if name is matching this parser + argcount > 1 
+        // (additional args ignored)
+        if(token.length > 1 && typeof(token[0]) === "string" && token[0] === "log") 
+        {
+            return {
+                operation: "log",
+                operands: [token[1]]
+            }
+        }
+        return null;
+    }
+}
+
+//----------------------------------------------
+    // Parsers for Turtle graphics operations
+//----------------------------------------------
+
+class BoxerForwardParser extends BoxerOperationParser 
+{
+    static new_parser = BoxerOperationParser.derived_parsers.add(this);
+    parse(token) 
+    {
+        //checks if name is matching this parser + argcount > 1 
+        // (additional args ignored)
+        if(token.length > 1 && typeof(token[0]) === "string" && token[0] === "forward") 
+        {
+            return {
+                operation: "forward",
+                operands: [token[1]]
+            }
+        }
+        return null;
+    }    
+}
+
+class BoxerSkipParser extends BoxerOperationParser 
+{
+    static new_parser = BoxerOperationParser.derived_parsers.add(this);
+    parse(token) 
+    {
+        //checks if name is matching this parser + argcount > 1 
+        // (additional args ignored)
+        if(token.length > 1 && typeof(token[0]) === "string" && token[0] === "skip") 
+        {
+            return {
+                operation: "skip",
+                operands: [token[1]]
+            }
+        }
+        return null;
+    }    
+}
+
+class BoxerLeftParser extends BoxerOperationParser 
+{
+    static new_parser = BoxerOperationParser.derived_parsers.add(this);
+    parse(token) 
+    {
+        //checks if name is matching this parser + argcount > 1 
+        // (additional args ignored)
+        if(token.length > 1 && typeof(token[0]) === "string" && token[0] === "left") 
+        {
+            return {
+                operation: "left",
+                operands: [token[1]]
+            }
+        }
+        return null;
+    }    
+}
+
+class BoxerRightParser extends BoxerOperationParser 
+{
+    static new_parser = BoxerOperationParser.derived_parsers.add(this);
+    parse(token) 
+    {
+        //checks if name is matching this parser + argcount > 1 
+        // (additional args ignored)
+        if(token.length > 1 && typeof(token[0]) === "string" && token[0] === "right") 
+        {
+            return {
+                operation: "right",
+                operands: [token[1]]
+            }
+        }
+        return null;
+    }    
+}
+
+//----------------------------------------------
+    // Parsers for Control flow operations
+//----------------------------------------------
+
+class BoxerRepeatParser extends BoxerOperationParser 
+{
+    static new_parser = BoxerOperationParser.derived_parsers.add(this);
+    parse(token) 
+    {
+        //checks if argcount > 2 (this is ok to do here)
+        // & first is a number (this is not something we can check here!(can be variable name) do it in execution instead)
+        // & second is a box-code/doit-box(->grab its box-code) (this is not something we can check here!(can be variable name) do it in execution instead)
+        // (additional args ignored)
+        return null;
+    }    
+}
+
+export function BoxerParser(caller_box)
+{
+    let tokens = BoxerTokenizer(caller_box);
+    console.log(tokens);
+    let sorted_tokens = BoxerTokenSorter(tokens);
+    return sorted_tokens;
+}
+
 export default parseBox;
