@@ -4,7 +4,7 @@
 //--------------------------------------------------------------------------------
 
 import turtle_api from "./TurtleGraphics.js";
-import "./IO.js";
+import * as IO_api from "./IO.js";
 import control_flow_api from "./ControlFlow.js";
 
 function BoxerTokenizer(caller_box)
@@ -268,7 +268,7 @@ class BoxerRepeatParser extends BoxerOperationParser
 class BoxerExecutor
 {
     //list of primitives with their corresponding parsers
-    #primitives = [];
+    #primitives = {};
 
     // variable TTL: counter that increments on copy&execute call 
     #NestingCounter = 0;
@@ -283,18 +283,18 @@ class BoxerExecutor
     - next
     - *NEW* Context#
     */
-    #operations;
+    #operations = [];
 
-    BoxerExecutor(ops, vars = null) 
+    constructor(ops, vars = null) 
     {
-        //constructor
         this.#operations = ops;
         this.#variables = vars;
 
         //import all primitives from their respective files:
-        this.#primitives.append(turtle_api.importPrimitives());
-        this.#primitives.append(IO_api.importPrimitives());
-        this.#primitives.append(control_flow_api.importPrimitives());
+        //this.#primitives.append(turtle_api.importPrimitives());
+        let iop = IO_api.importPrimitives();
+        Object.assign(this.#primitives, iop);
+        //this.#primitives.append(control_flow_api.importPrimitives());
         //-||- IO(input,change,log), new_var/nested_doit also IO
         //-||- ControlFlow(if,for,repeat) 
         // - treat all of the as old primitives handling, their specifics handled in files/through return type (see Execute())
@@ -303,11 +303,11 @@ class BoxerExecutor
     Execute() 
     {
         let processed_op_idx = 0;
-        while(processed_op_idx < operations.length)
+        while(processed_op_idx < this.#operations.length)
         {
-            let op = operations[processed_op_idx];
+            let op = this.#operations[processed_op_idx];
             processed_op_idx++;
-            let call = primitives[op.operation];
+            let call = this.#primitives[op.operation];
             if(call != null)
             {
                 if(call.needs_variables == true)
@@ -316,6 +316,7 @@ class BoxerExecutor
                 }
                 let res = call.function.apply(call.function, op.operands);
                 //TODO: check for return variables or new set of operations to splice
+                if(res === undefined) { continue; }
                 switch (res.return_type) {
                     case "variables":
                         this.#variables = res.return_value;
@@ -352,8 +353,8 @@ function BoxerEvaluator(variables, caller_box)
     console.log(tokens);
     let sorted_tokens = BoxerTokenSorter(tokens);
     console.log(sorted_tokens);
-    //let executor = BoxerExecutor(sorted_tokens, variables);
-    //executor.Execute();
+    let executor = new BoxerExecutor(sorted_tokens, variables);
+    executor.Execute();
 }
 
 export default BoxerEvaluator
