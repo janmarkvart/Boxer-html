@@ -74,6 +74,7 @@ function boxHeaderRun(e)
     }
     interpretBox(initial_variable, target);
     console.log("new:");
+    initial_variable["nesting"] = 0;
     BoxerEvaluator(initial_variable, target);
 }
 function boxHeaderShowHide(e) 

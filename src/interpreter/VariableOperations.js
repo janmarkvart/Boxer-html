@@ -2,6 +2,8 @@
     // Evaluating new variables to be added to the list of variables
 //--------------------------------------------------------------------------------
 
+import * as BoxerParser from "./BoxParser.js";
+
 export function addNewVariable(variables, addition)
 {
     let tmp = variables;
@@ -151,7 +153,7 @@ export function processOperand(variables, operand)
                             operand = candidate_content.innerText.trim();
                             return operand;
                         }
-                        let parsed = parseBox.parseBox(candidate);
+                        let parsed = BoxerParser.BoxerParser(candidate);
                         let processed = addNewVariable(null, [candidate.id, parsed]);
 
                         spl_idx++;

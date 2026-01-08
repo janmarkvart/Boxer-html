@@ -46,9 +46,6 @@ class BoxerExecutor
         Object.assign(this.#primitives, iop);
         let cfop = CF_api.importPrimitives();
         Object.assign(this.#primitives, cfop);
-        //-||- IO(input,change,log), new_var/nested_doit also IO
-        //-||- ControlFlow(if,for,repeat) 
-        // - treat all of the as old primitives handling, their specifics handled in files/through return type (see Execute())
     }
 
     Execute() 
@@ -68,7 +65,6 @@ class BoxerExecutor
                     op.operands.unshift(this.#variables);
                 }
                 let res = call.function.apply(call.function, op.operands);
-                //TODO: check for return variables or new set of operations to splice
                 if(res === undefined) { continue; }
                 switch (res.return_type) {
                     case "variables":
@@ -77,6 +73,9 @@ class BoxerExecutor
                     case "operations":
                         this.#operations.splice(processed_op_idx, 0, ...res.return_value);
                         break;
+                    case "both"://"for" primitive returns both the temporal variable and operations
+                        this.#variables = res.return_variables;
+                        this.#operations.splice(processed_op_idx, 0, ...res.return_operations);
                     default:
                         break;
                 }
@@ -91,6 +90,8 @@ class BoxerExecutor
                 this.#operations.splice(processed_op_idx, 0, ...new_operations);
             }
         }
+        console.log(this.#operations);
+        console.log(this.#variables);
         // iterate primitives
         // - if returns new operations[], splice them wherever we are (same splice as before basically)
 
@@ -116,8 +117,3 @@ function BoxerEvaluator(variables, caller_box)
 }
 
 export default BoxerEvaluator
-
-//TODO: parsing and sorting phase should sort out:
-//1) explicit comments (databox with name #) (also not implemented yet!)
-//2) user-attemps to invoke 'new_var' (should be treated as a non-operation and filtered out from evaluated code)
-//      - no other explicit "bans" should exist ('clear' will be replaced with nestingCounter)
