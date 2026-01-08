@@ -20,15 +20,29 @@ export function importPrimitives()
     return control_primitives;
 }
 
-export function CF_if(...operands)
+export function CF_if(variables,...operands)
 {
     let operations = [];
-
-    let res = {
-        "return_type": "operations",
-        "return_value": operations
+    let left = VAR_api.processOperand(variables, operands[0]);
+    let comparator = operands[1];
+    let right = VAR_api.processOperand(variables, operands[2]);
+    let box = operands[3];
+    try
+    {
+        if(eval("\""+left +"\""+ comparator +"\""+ right +"\" ? true : false"))
+        {
+            operations = BoxerParser.BoxerParser(box);
+            let res = {
+                "return_type": "operations",
+                "return_value": operations
+            }
+            return res;
+        }
     }
-    return res;
+    catch(e)
+    {
+        if(e instanceof SyntaxError) { alert("if: provided condition contains syntax errors!");}
+    }
 }
 
 export function CF_for(variables, ...operands)
