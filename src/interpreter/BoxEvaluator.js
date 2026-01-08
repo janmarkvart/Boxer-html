@@ -61,8 +61,9 @@ class BoxerExecutor
             {
                 if(call.needs_variables == true)
                 {
-                    op.operands.unshift(variables);
+                    op.operands.unshift(this.#variables);
                 }
+                console.log(op.operands);
                 let res = call.function.apply(call.function, op.operands);
                 //TODO: check for return variables or new set of operations to splice
                 if(res === undefined) { continue; }
@@ -79,6 +80,7 @@ class BoxerExecutor
                 continue;
             }
         }
+        console.log(this.#variables);
         // iterate primitives
         // - if returns new operations[], splice them wherever we are (same splice as before basically)
 

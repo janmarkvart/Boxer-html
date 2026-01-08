@@ -4,8 +4,8 @@ var IO_primitives = {
     "input": {function: IO_input, needs_variables: true},
     "change": {function: IO_change, needs_variables: true},
     "log": {function: IO_log, needs_variables: false},
-    "new_var": {function: IO_nested_doit, needs_variables: true},
-    "nested_doit": {function: IO_new_var, needs_variables: true}
+    "new_var": {function: IO_new_var, needs_variables: true},
+    "nested_doit": {function: IO_nested_doit, needs_variables: true}
 }
 
 //--------------------------------------------------------------------------------
@@ -35,16 +35,24 @@ export function IO_log(word)
     console.log("printing: " +word);
 }
 
-export function IO_new_var(variables/*,...*/)
+export function IO_new_var(variables, ...addition)
 {
-    //modifies variables
-    return variables;
+    variables = addNewVariable(variables, addition);
+    let res = {
+        "return_type": "variables",
+        "return_value": variables
+    }
+    return res;
 }
 
-export function IO_nested_doit(variables/*,...*/)
+export function IO_nested_doit(variables, ...addition)
 {
-    variables = addNewVariable
-    return variables;
+    variables = addNewVariable(variables, addition);
+    let res = {
+        "return_type": "variables",
+        "return_value": variables
+    }
+    return res;
 }
 
 //--------------------------------------------------------------------------------
