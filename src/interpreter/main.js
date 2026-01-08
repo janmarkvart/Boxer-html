@@ -1,4 +1,4 @@
-import parseBox from "./BoxParser.js";
+import * as parseBox from "./BoxParser.js";
 import turtle_api from "./TurtleGraphics.js";
 import template_manager from "./TemplateManager.js";
 import BoxerEvaluator from "./BoxEvaluator.js";
@@ -281,7 +281,7 @@ function templateEventAdder(newbox)
 function interpretBox(variables, caller_box)
 {
     //interpretation of the original caller box
-    let operations = parseBox(caller_box);
+    let operations = parseBox.parseBox(caller_box);
     console.log(operations);
     evalBox(operations, variables);
 }
@@ -341,7 +341,7 @@ function evalBox(operations, variables = null)
         {
             //add nested code into evaluation as a inner scope
             let box = op.operands[0];
-            let new_operations = parseBox(box);
+            let new_operations = parseBox.parseBox(box);
             operations.splice(processed_op_idx, 0, ...new_operations);
             continue;
         }
@@ -353,7 +353,7 @@ function evalBox(operations, variables = null)
             let box = op.operands[1];
             for(let i = 0; i < times; i++)
             {
-                let new_operations = parseBox(box);
+                let new_operations = parseBox.parseBox(box);
                 operations.splice(processed_op_idx, 0, ...new_operations);
             }
             continue;
@@ -379,7 +379,7 @@ function evalBox(operations, variables = null)
                             value: elem.value,
                             next: variables
                         };
-                        let new_operations = parseBox(box);
+                        let new_operations = parseBox.parseBox(box);
                         let combined = new_operations.concat([{operation: "clear", operands: [1]}]);
                         operations.splice(processed_op_idx, 0, ...combined);
                     }
@@ -398,7 +398,7 @@ function evalBox(operations, variables = null)
             {
                 if(eval("\""+left +"\""+ comparator +"\""+ right +"\" ? true : false"))
                 {
-                    let new_operations = parseBox(box);
+                    let new_operations = parseBox.parseBox(box);
                     operations.splice(processed_op_idx, 0, ...new_operations);
                 }
             }
@@ -485,7 +485,7 @@ function evalBox(operations, variables = null)
                 {
                     //add new variables to pass to potential input in called box
                     variables = createEmptyVariables(variables, op);
-                    let new_operations = parseBox(box);
+                    let new_operations = parseBox.parseBox(box);
                     //add newly created variables to list of "clear on exit" variables
                     new_operations[new_operations.length - 1].operands[0] += op.operands.length;
                     operations.splice(processed_op_idx, 0, ...new_operations);
@@ -514,7 +514,7 @@ function evalBox(operations, variables = null)
                     {
                         found = true;
                         variables = createEmptyVariables(variables, op);
-                        let new_operations = parseBox(candidate);
+                        let new_operations = parseBox.parseBox(candidate);
                         new_operations[new_operations.length - 1].operands[0] += op.operands.length;
                         operations.splice(processed_op_idx, 0, ...new_operations);
                         return;
@@ -523,7 +523,7 @@ function evalBox(operations, variables = null)
                     {
                         //found the box to call
                         found = true;
-                        let parsed = parseBox(candidate);
+                        let parsed = parseBox.parseBox(candidate);
                         let processed = addNewVariable(null, [candidate.id, parsed]);
                         spl_idx++;
                         while(spl_idx < spl.length)
@@ -545,7 +545,7 @@ function evalBox(operations, variables = null)
                         {
                             //add new variables to pass to potential input in called box
                             variables = createEmptyVariables(variables, op);
-                            let new_operations = parseBox(processed);
+                            let new_operations = parseBox.parseBox(processed);
                             //add newly created variables to list of "clear on exit" variables
                             new_operations[new_operations.length - 1].operands[0] += op.operands.length;
                             operations.splice(processed_op_idx, 0, ...new_operations);
@@ -662,7 +662,7 @@ function processOperand(operand, variables)
                             operand = candidate_content.innerText.trim();
                             return operand;
                         }
-                        let parsed = parseBox(candidate);
+                        let parsed = parseBox.parseBox(candidate);
                         let processed = addNewVariable(null, [candidate.id, parsed]);
 
                         spl_idx++;

@@ -6,7 +6,7 @@
 import * as TG_api from "./TurtleGraphics.js";
 import * as IO_api from "./IO.js";
 import * as CF_api from "./ControlFlow.js";
-import BoxerParser from "./BoxParser.js";
+import * as BoxerParser from "./BoxParser.js";
 
 //--------------------------------------------------------------------------------
     // Parsed operations execution
@@ -100,7 +100,8 @@ class BoxerExecutor
 
 function BoxerEvaluator(variables, caller_box)
 {
-    let sorted_tokens = BoxerParser(caller_box);
+    let sorted_tokens = BoxerParser.BoxerParser(caller_box);
+    console.log(sorted_tokens);
     let executor = new BoxerExecutor(variables, sorted_tokens);
     executor.Execute();
 }
