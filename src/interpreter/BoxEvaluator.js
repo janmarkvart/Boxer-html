@@ -88,7 +88,8 @@ class BoxerExecutor
                 //TODO: move to sep function somewhere
                 let box = BoxLookup(this.#variables, op.operands[0]);
                 //add new variables to pass to potential input in called box
-                //TODO: variables = createEmptyVariables(variables, op);
+                this.#variables = this.createEmptyVariables(this.#variables, op);
+                console.log(this.#variables);
                 let new_operations = BoxerParser.BoxerParser(box);
                 //add newly created variables to list of "clear on exit" variables
                 this.#operations.splice(processed_op_idx, 0, ...new_operations);
@@ -105,6 +106,23 @@ class BoxerExecutor
         //      - needs variables same as before
         //      - return type: can return operation[] or nothing (no other cases should exist rn, errors handled in resp. files)
         //          - determine operation[] by checking if first has operation+operands
+    }
+
+    createEmptyVariables(variables, op)
+    {
+        //creates empty variables (without a name), that will then be caught and "completed" by the input operation
+        let new_var = variables;
+        for(let i = op.operands.length -1 ; i >= 1; i--)
+        {
+            let curr_operand = op.operands[i];
+            let tmp = new_var;
+            new_var = {
+                name: null,
+                value: curr_operand,
+                next: tmp
+            };
+        }
+        return new_var;
     }
 }
 

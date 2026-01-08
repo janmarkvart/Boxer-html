@@ -17,10 +17,27 @@ export function importPrimitives()
     return IO_primitives;
 }
 
-export function IO_input(variables/*,...*/)
+export function IO_input(variables,...operands)
 {
     //modifies variables
     //TODO: lookup how to do dynamic amount of function arguments (should be sth like ...inputs)
+    console.log("input start...");
+    console.log(variables);
+    operands.forEach(operand => {
+        let variables_iter = variables;
+        while(variables_iter != null)
+        {
+            if(variables_iter.name == null)
+            {
+                //catch it into provided variable name
+                variables_iter.name = operand[0];
+                break;
+            }
+            variables_iter = variables_iter.next;
+        }
+    });
+    console.log(variables);
+    console.log("input end...")
     return variables;
 }
 

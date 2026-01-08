@@ -1,3 +1,5 @@
+import * as BoxerParser from "./BoxParser.js";//TODO:temp
+
 function BoxLookup(variables, box_name)
 {
     //dynamic:
@@ -117,3 +119,54 @@ function StaticLookup(curr, spl)
 }
 
 export default BoxLookup
+
+function addNewVariable(variables, addition)
+{
+    let tmp = variables;
+    if(addition[1].constructor != Array)
+    {
+        //simple variable
+        let new_var = {
+            name: addition[0],
+            value: addition[1],
+            next: tmp
+        }
+        variables = new_var;
+    }
+    else 
+    {
+        //complex variable
+        let new_var = {
+            name: addition[0],
+            value: createComplexVariable(addition[1]),
+            next: tmp
+        }
+        variables = new_var;
+    }
+    return variables;
+}
+
+function createComplexVariable(addition)
+{
+    let variable = [];
+    addition.forEach(elem => 
+    {
+        if(elem.operation == "clear" || elem.operands.length == 1) {return;} //filter non-variables
+        if(elem.operands[1].constructor != Array)
+        {
+            variable.push({
+                name: elem.operands[0],
+                value: elem.operands[1]
+            });
+        }
+        else 
+        {
+            //recursion for more complex variables
+            variable.push({
+                name: elem.operands[0],
+                value: createComplexVariable(elem.operands[1])
+            });
+        }
+    });
+    return variable;
+}
