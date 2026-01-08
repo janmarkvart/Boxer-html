@@ -1,5 +1,7 @@
 //control flow operations (if, for, repeat)
 
+import * as VAR_api from "./VariableOperations.js";
+
 //--------------------------------------------------------------------------------
     // Contro Flow Primitive operations
 //--------------------------------------------------------------------------------
@@ -15,21 +17,21 @@ export function importPrimitives()
     return control_primitives;
 }
 
-export function CF_if()
+export function CF_if(...operands)
 {
     let operations = [];
 
     return operations;
 }
 
-export function CF_for()
+export function CF_for(variables, ...operands)
 {
     let operations = [];
 
     return operations;
 }
 
-export function CF_repeat()
+export function CF_repeat(times, code)
 {
     let operations = [];
 

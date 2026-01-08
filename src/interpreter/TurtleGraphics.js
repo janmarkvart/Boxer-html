@@ -1,3 +1,5 @@
+import * as VAR_api from "./VariableOperations.js";
+
 var canvas_pointer = null;
 var canvas_context;
 var turtle_position = {x: 50, y: 30, rotation: 0};
@@ -8,10 +10,10 @@ var turtle_api = {
 }
 
 var turple_primitives = {
-    "forward" : {function: TG_forward, needs_variables: false },
-    "skip" : {function: TG_skip, needs_variables: false },
-    "left" : {function: TG_left, needs_variables: false },
-    "right" : {function: TG_right, needs_variables: false }
+    "forward" : {function: TG_forward, needs_variables: true },
+    "skip" : {function: TG_skip, needs_variables: true },
+    "left" : {function: TG_left, needs_variables: true },
+    "right" : {function: TG_right, needs_variables: true }
 }
 
 export function importPrimitives()
@@ -19,8 +21,9 @@ export function importPrimitives()
     return turple_primitives;
 }
 
-export function TG_forward(distance)
+export function TG_forward(variables, distance)
 {
+    distance = VAR_api.processOperand(variables, distance);
     let dist = Number(distance);
     if(isNaN(dist)) { alert("forward "+distance+": distance provided is not a number"); return; }
     turtle_position.x += Math.sin(turtle_position.rotation/180*Math.PI) * dist;
@@ -28,8 +31,9 @@ export function TG_forward(distance)
     canvas_draw(true);
 }   
 
-export function TG_skip(distance)
+export function TG_skip(variables, distance)
 {
+    distance = VAR_api.processOperand(variables, distance);
     let dist = Number(distance);
     if(isNaN(dist)) { alert("skip "+distance+": distance provided is not a number"); return; }
     turtle_position.x += Math.sin(turtle_position.rotation/180*Math.PI) * dist;
@@ -37,15 +41,17 @@ export function TG_skip(distance)
     canvas_draw(false);
 }
 
-export function TG_left (degrees)
+export function TG_left (variables, degrees)
 {
+    degrees = VAR_api.processOperand(variables, degrees);
     let deg = Number(degrees);
     if(isNaN(deg)) { alert("left "+degrees+": degrees provided are not a number"); return; }
     turtle_position.rotation = (turtle_position.rotation + deg)%360;
 }
 
-export function TG_right (degrees)
+export function TG_right (variables, degrees)
 {
+    degrees = VAR_api.processOperand(variables, degrees);
     let deg = Number(degrees);
     if(isNaN(deg)) { alert("right "+degrees+": degrees provided are not a number"); return; }
     turtle_position.rotation = (turtle_position.rotation - deg)%360;

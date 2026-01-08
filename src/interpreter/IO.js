@@ -1,9 +1,11 @@
 //IO operations (input,change,log) + new_var/nested_doit
 
+import * as VAR_api from "./VariableOperations.js";
+
 var IO_primitives = {
     "input": {function: IO_input, needs_variables: true},
     "change": {function: IO_change, needs_variables: true},
-    "log": {function: IO_log, needs_variables: false},
+    "log": {function: IO_log, needs_variables: true},
     "new_var": {function: IO_new_var, needs_variables: true},
     "nested_doit": {function: IO_nested_doit, needs_variables: true}
 }
@@ -20,9 +22,7 @@ export function importPrimitives()
 export function IO_input(variables,...operands)
 {
     //modifies variables
-    //TODO: lookup how to do dynamic amount of function arguments (should be sth like ...inputs)
-    console.log("input start...");
-    console.log(variables);
+    //TODO: update to VAR_api.updateVariable(...) ?
     operands.forEach(operand => {
         let variables_iter = variables;
         while(variables_iter != null)
@@ -36,24 +36,12 @@ export function IO_input(variables,...operands)
             variables_iter = variables_iter.next;
         }
     });
-    console.log(variables);
-    console.log("input end...")
     return variables;
 }
 
 export function IO_change(variables, box, update)
 {
-    let variables_copy = variables;
-    while(variables_copy != null)
-    {
-        if(variables_copy.name == box)
-        {
-            //found the variable to change
-            variables_copy.value = update;
-            break;
-        }
-        variables_copy = variables_copy.next;
-    }
+    let variables_copy = VAR_api.updateVariable(variables, box, update);
     //also update the box itself
     let target_box = document.getElementById(box);
     if(target_box != null)
@@ -68,14 +56,15 @@ export function IO_change(variables, box, update)
     return variables_copy;
 }
 
-export function IO_log(word)
+export function IO_log(variables, word)
 {
+    word = VAR_api.processOperand(variables, word);
     console.log("printing: " +word);
 }
 
 export function IO_new_var(variables, ...addition)
 {
-    variables = addNewVariable(variables, addition);
+    variables = VAR_api.addNewVariable(variables, addition);
     let res = {
         "return_type": "variables",
         "return_value": variables
@@ -85,7 +74,7 @@ export function IO_new_var(variables, ...addition)
 
 export function IO_nested_doit(variables, ...addition)
 {
-    variables = addNewVariable(variables, addition);
+    variables = VAR_api.addNewVariable(variables, addition);
     let res = {
         "return_type": "variables",
         "return_value": variables

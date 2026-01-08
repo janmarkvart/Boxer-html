@@ -296,7 +296,6 @@ class BoxerNewVarParser extends BoxerOperationParser
             {
                 //complex databox variable
                 let complex_variable = BoxerParser(databox);
-                console.log(complex_variable);
                 return {
                     operation: "new_var",
                     operands: [databox_id, complex_variable]
@@ -542,9 +541,7 @@ class BoxerIfParser extends BoxerOperationParser
 
 export function BoxerParser(caller_box)
 {
-    console.log("new parser");
     let tokens = BoxerTokenizer(caller_box);
-    console.log(tokens);
     let sorted_tokens = BoxerTokenSorter(tokens);
     return sorted_tokens;
 }
