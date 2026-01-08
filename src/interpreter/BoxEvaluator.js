@@ -7,8 +7,6 @@ import * as TG_api from "./TurtleGraphics.js";
 import * as IO_api from "./IO.js";
 import * as CF_api from "./ControlFlow.js";
 import * as BoxerParser from "./BoxParser.js";
-import * as VAR_api from "./VariableOperations.js";
-import BoxLookup from "./BoxLookup.js";
 
 //--------------------------------------------------------------------------------
     // Parsed operations execution
@@ -56,10 +54,8 @@ class BoxerExecutor
             let op = this.#operations[processed_op_idx];
             processed_op_idx++;
             let call = this.#primitives[op.operation];
-            let primitive_found = false;
             if(call != null)
             {
-                primitive_found = true;
                 if(call.needs_variables == true)
                 {
                     op.operands.unshift(this.#variables);
@@ -80,14 +76,6 @@ class BoxerExecutor
                         break;
                 }
                 continue;
-            }
-            if(!primitive_found)
-            {
-                let box = BoxLookup(this.#variables, op.operands[0]);
-                this.#variables = VAR_api.createEmptyVariables(this.#variables, op);
-                let new_operations = BoxerParser.BoxerParser(box);
-                //add newly created variables to list of "clear on exit" variables
-                this.#operations.splice(processed_op_idx, 0, ...new_operations);
             }
         }
         console.log(this.#operations);

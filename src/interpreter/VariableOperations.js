@@ -190,13 +190,13 @@ export function processOperand(variables, operand)
     // Creating empty(unnamed) variables for the "input" primitive
 //--------------------------------------------------------------------------------
 
-export function createEmptyVariables(variables, op)
+export function createEmptyVariables(variables, operands)
 {
     //creates empty variables (without a name), that will then be caught and "completed" by the input operation
     let new_var = variables;
-    for(let i = op.operands.length -1 ; i >= 1; i--)
+    for(let i = operands.length -1 ; i >= 0; i--)
     {
-        let curr_operand = op.operands[i];
+        let curr_operand = operands[i];
         curr_operand = processOperand(variables, curr_operand);
         let tmp = new_var;
         new_var = {

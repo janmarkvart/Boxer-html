@@ -2,6 +2,7 @@
 
 import * as VAR_api from "./VariableOperations.js";
 import * as BoxerParser from "./BoxParser.js";
+import BoxLookup from "./BoxLookup.js";
 
 //--------------------------------------------------------------------------------
     // Contro Flow Primitive operations
@@ -10,7 +11,8 @@ import * as BoxerParser from "./BoxParser.js";
 var control_primitives = {
     "if" : {function: CF_if, needs_variables: true},
     "for" : {function: CF_for, needs_variables: true},
-    "repeat" : {function: CF_repeat, needs_variables: true}
+    "repeat" : {function: CF_repeat, needs_variables: true},
+    "potential_call" : {function: CF_call, needs_variables: true}
 }
 
 export function importPrimitives()
@@ -76,6 +78,21 @@ export function CF_repeat(variables, times, box)
     let res = {
         "return_type": "operations",
         "return_value": operations
+    }
+    return res;
+}
+
+export function CF_call(variables, name, ...args)
+{
+    console.log(args);
+    let box = BoxLookup(variables, name);
+    if(box === null) { return; }
+    variables = VAR_api.createEmptyVariables(variables, args);
+    let new_operations = BoxerParser.BoxerParser(box);
+    let res = {
+        "return_type": "both",
+        "return_variables": variables,
+        "return_operations": new_operations
     }
     return res;
 }

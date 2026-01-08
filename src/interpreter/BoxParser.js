@@ -472,7 +472,7 @@ class BoxerCallParser extends BoxerOperationParser
         if(token.length > 0 && typeof(token[0]) === "string") 
         {
             return {
-                operation: "potentical_call",
+                operation: "potential_call",
                 operands: token
             }
         }
