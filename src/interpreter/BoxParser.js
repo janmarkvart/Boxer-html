@@ -232,6 +232,10 @@ function BoxerTokenSorter(tokens)
                 case "nested_doit":
                     nested_doits.push(res);
                     break;
+                case "input":
+                    //special case: input is only valid when it is the first operation in a box
+                    if(operations.length === 0) { operations.push(res); }
+                    break;
                 default:
                     operations.push(res);
                     break;
