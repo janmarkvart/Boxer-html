@@ -220,9 +220,11 @@ function BoxerTokenSorter(tokens)
         //calls individual operation Parsers, depending on which one succeeds->sorts into categories
         //new_var has absolute ordering priority to ensure variables are ready for use in other operations,
         //followed by nested_doit boxes, followed by primitive operations
+        let found = false;
         parsers.forEach(parser => {
             let res = parser.prototype.parse(token);
-            if(res === null) { console.log("nope"); return; }
+            if(res === null) { return; }
+            found = true;
             switch (res.operation) {
                 case "new_var":
                     variables.push(res);
@@ -235,6 +237,13 @@ function BoxerTokenSorter(tokens)
                     break;
             }
         });
+        if(!found)
+        {
+            //can be a box call
+            let res = BoxerCallParser.prototype.parse(token);
+            if(res === null) { return; }
+            operations.push(res);
+        }
     });
 
     let sorted_tokens = variables.concat(nested_doits, operations);
@@ -450,6 +459,23 @@ class BoxerRightParser extends BoxerOperationParser
 //----------------------------------------------
     // Parsers for Control flow operations
 //----------------------------------------------
+
+class BoxerCallParser extends BoxerOperationParser 
+{
+    //static new_parser = BoxerOperationParser.derived_parsers.add(this);
+    parse(token) 
+    {
+        //only requirement is first argument being string
+        if(token.length > 0 && typeof(token[0]) === "string") 
+        {
+            return {
+                operation: "potentical_call",
+                operands: token
+            }
+        }
+        return null;
+    }    
+}
 
 class BoxerRepeatParser extends BoxerOperationParser 
 {
