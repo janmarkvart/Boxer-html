@@ -21,26 +21,34 @@ export function importPrimitives()
 
 export function TG_forward(distance)
 {
-    turtle_position.x += Math.sin(turtle_position.rotation/180*Math.PI) * distance;
-    turtle_position.y += Math.cos(turtle_position.rotation/180*Math.PI) * distance;
+    let dist = Number(distance);
+    if(isNaN(dist)) { alert("forward "+distance+": distance provided is not a number"); return; }
+    turtle_position.x += Math.sin(turtle_position.rotation/180*Math.PI) * dist;
+    turtle_position.y += Math.cos(turtle_position.rotation/180*Math.PI) * dist;
     canvas_draw(true);
 }   
 
 export function TG_skip(distance)
 {
-    turtle_position.x += Math.sin(turtle_position.rotation/180*Math.PI) * distance;
-    turtle_position.y += Math.cos(turtle_position.rotation/180*Math.PI) * distance;
+    let dist = Number(distance);
+    if(isNaN(dist)) { alert("skip "+distance+": distance provided is not a number"); return; }
+    turtle_position.x += Math.sin(turtle_position.rotation/180*Math.PI) * dist;
+    turtle_position.y += Math.cos(turtle_position.rotation/180*Math.PI) * dist;
     canvas_draw(false);
 }
 
 export function TG_left (degrees)
 {
-    turtle_position.rotation = (turtle_position.rotation + degrees)%360;
+    let deg = Number(degrees);
+    if(isNaN(deg)) { alert("left "+degrees+": degrees provided are not a number"); return; }
+    turtle_position.rotation = (turtle_position.rotation + deg)%360;
 }
 
 export function TG_right (degrees)
 {
-    turtle_position.rotation = (turtle_position.rotation - degrees)%360;
+    let deg = Number(degrees);
+    if(isNaN(deg)) { alert("right "+degrees+": degrees provided are not a number"); return; }
+    turtle_position.rotation = (turtle_position.rotation - deg)%360;
 }
 
 function setup(canvas_id)
@@ -56,6 +64,7 @@ function setup(canvas_id)
 
 function updateposition(direction, value)
 {
+    //TODO: delete before submit!
     switch(direction) {
         case "left":
             turtle_position.rotation = (turtle_position.rotation + value)%360;
