@@ -70,6 +70,7 @@ class BoxerExecutor
                 switch (res.return_type) {
                     case "variables":
                         this.#variables = res.return_value;
+                        console.log(this.#variables);
                         break;
                     case "operations":
                         this.#operations.splice(processed_op_idx, 0, ...res.return_value);

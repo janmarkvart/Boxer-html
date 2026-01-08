@@ -43,8 +43,6 @@ export function TG_right (degrees)
     turtle_position.rotation = (turtle_position.rotation - degrees)%360;
 }
 
-//TODO: rewrite updatePosition into separate primitives, then importPrimitives gives them to BoxEvaluator.js (pseudocode in main is only to show how it will look)
-
 function setup(canvas_id)
 {
     canvas_pointer = document.getElementById(canvas_id);

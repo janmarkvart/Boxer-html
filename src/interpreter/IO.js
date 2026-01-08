@@ -24,10 +24,31 @@ export function IO_input(variables/*,...*/)
     return variables;
 }
 
-export function IO_change(variables/*,...*/)
+export function IO_change(variables, box, update)
 {
+    let variables_copy = variables;
+    while(variables_copy != null)
+    {
+        if(variables_copy.name == box)
+        {
+            //found the variable to change
+            variables_copy.value = update;
+            break;
+        }
+        variables_copy = variables_copy.next;
+    }
+    //also update the box itself
+    let target_box = document.getElementById(box);
+    if(target_box != null)
+    {
+        if(target_box.nodeName == "DATA-BOX" || target_box.nodeName == "DOIT-BOX")
+        {
+            let target_box_code = target_box.getElementsByTagName('BOX-CODE')[0];
+            target_box_code.innerText = update;
+        }
+    }
     //modifies variables (&HTML)
-    return variables;
+    return variables_copy;
 }
 
 export function IO_log(word)
