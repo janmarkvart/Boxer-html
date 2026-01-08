@@ -7,6 +7,7 @@ import * as TG_api from "./TurtleGraphics.js";
 import * as IO_api from "./IO.js";
 import * as CF_api from "./ControlFlow.js";
 import * as BoxerParser from "./BoxParser.js";
+import * as VAR_api from "./VariableOperations.js";
 
 //--------------------------------------------------------------------------------
     // Parsed operations execution
@@ -61,8 +62,9 @@ class BoxerExecutor
                     op.operands.unshift(this.#variables);
                 }
                 let res = call.function.apply(call.function, op.operands);
-                if(res === undefined) { continue; }
-                switch (res.return_type) {
+                if(res !== undefined)
+                {
+                    switch (res.return_type) {
                     case "variables":
                         this.#variables = res.return_value;
                         break;
@@ -74,7 +76,9 @@ class BoxerExecutor
                         this.#operations.splice(processed_op_idx, 0, ...res.return_operations);
                     default:
                         break;
+                    }
                 }
+                if(Object.hasOwn(op, "returning")) { this.#variables = VAR_api.clearNestingLevelVariables(this.#variables); }
                 continue;
             }
         }

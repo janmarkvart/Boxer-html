@@ -7,12 +7,15 @@ import * as BoxerParser from "./BoxParser.js";
 export function addNewVariable(variables, addition)
 {
     let tmp = variables;
+    let new_nesting = 0;
+    if(tmp !== null) { new_nesting = tmp.nesting; }
     if(addition[1].constructor != Array)
     {
         //simple variable
         let new_var = {
             name: addition[0],
             value: addition[1],
+            nesting: new_nesting,
             next: tmp
         }
         variables = new_var;
@@ -23,6 +26,7 @@ export function addNewVariable(variables, addition)
         let new_var = {
             name: addition[0],
             value: createComplexVariable(addition[1]),
+            nesting: new_nesting,
             next: tmp
         }
         variables = new_var;
@@ -202,8 +206,31 @@ export function createEmptyVariables(variables, operands)
         new_var = {
             name: null,
             value: curr_operand,
+            nesting: tmp.nesting,
             next: tmp
         };
     }
     return new_var;
+}
+
+//--------------------------------------------------------------------------------
+    // Variable lifetime management
+//--------------------------------------------------------------------------------
+
+export function increaseNestingLevel(variables)
+{
+    variables.nesting += 1;
+    return variables;
+}
+
+export function clearNestingLevelVariables(variables)
+{
+    //removes all variables in the lowest nesting, effectively clearing the nearest scope
+    let current_nesting = variables.nesting;
+    while(variables.next.nesting === current_nesting)
+    {
+        variables = variables.next;
+    }
+    variables.nesting -= 1;
+    return variables;
 }

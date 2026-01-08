@@ -40,19 +40,21 @@ export function CF_for(variables, ...operands)
     let box = operands[3];
     if(check == "in")
     {
-        console.log(source);
         for(let i = source.length -1 ; i >= 0; i--)
         {
             let elem = source[i];
-            console.log(elem);
             if(elem.value !== undefined && elem.value.nodeName != "BOX-CODE")
             {
+                //copy&execute->increases nesting counter
+                VAR_api.increaseNestingLevel(variables);
                 variables = {
                     name: iter,
                     value: elem.value,
+                    nesting: variables.nesting,
                     next: variables
                 };
                 let new_operations = BoxerParser.BoxerParser(box);
+                new_operations[new_operations.length-1]["returning"] = true;
                 operations = operations.concat(new_operations);
             }
         };
@@ -72,7 +74,11 @@ export function CF_repeat(variables, times, box)
     if(isNaN(times)) { alert("Repeat: first operand has to be a number!"); return; }
     for(let i = 0; i < times; i++)
     {
+        //copy&execute->increases nesting counter
+        VAR_api.increaseNestingLevel(variables);
+
         let new_operations = BoxerParser.BoxerParser(box);
+        new_operations[new_operations.length-1]["returning"] = true;
         operations = operations.concat(new_operations);
     }
     let res = {
@@ -84,11 +90,13 @@ export function CF_repeat(variables, times, box)
 
 export function CF_call(variables, name, ...args)
 {
-    console.log(args);
     let box = BoxLookup(variables, name);
     if(box === null) { return; }
+    //copy&execute->increases nesting counter
+    VAR_api.increaseNestingLevel(variables);
     variables = VAR_api.createEmptyVariables(variables, args);
     let new_operations = BoxerParser.BoxerParser(box);
+    new_operations[new_operations.length-1]["returning"] = true;
     let res = {
         "return_type": "both",
         "return_variables": variables,
